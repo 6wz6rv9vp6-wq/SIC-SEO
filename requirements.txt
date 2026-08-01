@@ -1,0 +1,4 @@
+anthropic==0.31.0
+paramiko==3.4.0
+beautifulsoup4==4.12.2
+requests==2.31.0
