@@ -55,7 +55,12 @@ logger = logging.getLogger(__name__)
 # CLAUDE CLIENT
 # ============================================================================
 
-client = Anthropic(api_key=CLAUDE_API_KEY)
+try:
+    client = Anthropic(api_key=CLAUDE_API_KEY)
+except TypeError:
+    # Fallback für alte/neue Anthropic Versionen
+    from anthropic._client import Anthropic as AnthropicClient
+    client = AnthropicClient(api_key=CLAUDE_API_KEY)
 
 # ============================================================================
 # CONTENT GENERATION FUNCTIONS
@@ -84,7 +89,7 @@ Antworte NUR mit dem HTML-Code, kein Markdown, keine Erklärungen.
     logger.info(f"Generiere Section für: {keyword}")
     
     message = client.messages.create(
-        model="claude-opus-4-1",
+        model="claude-sonnet-4-20250514",
         max_tokens=500,
         messages=[
             {"role": "user", "content": prompt}
@@ -113,7 +118,7 @@ Antworte NUR mit dem HTML-Code, kein Markdown, keine Erklärungen.
     logger.info("Generiere FAQ-Section")
     
     message = client.messages.create(
-        model="claude-opus-4-1",
+        model="claude-sonnet-4-20250514",
         max_tokens=800,
         messages=[
             {"role": "user", "content": prompt}
@@ -143,7 +148,7 @@ Antworte NUR mit dem HTML-Code, kein Markdown, keine Erklärungen.
     logger.info("Generiere Video-Section")
     
     message = client.messages.create(
-        model="claude-opus-4-1",
+        model="claude-sonnet-4-20250514",
         max_tokens=500,
         messages=[
             {"role": "user", "content": prompt}
