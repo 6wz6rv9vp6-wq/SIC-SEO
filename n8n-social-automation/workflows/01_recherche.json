@@ -1,0 +1,544 @@
+{
+  "name": "01 Recherche – Kundenthemen & Mitbewerber",
+  "nodes": [
+    {
+      "id": "a3fb8925-259f-5474-ba64-0cdde6449931",
+      "name": "Jeden Montag 06:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * 1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "0138b733-5e5c-50ca-b3a0-3712a431d630",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "71b541b2-4d47-55ad-9cb9-caf7d4fe21fd",
+      "name": "Recherche-Anfragen bauen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst heute = new Date().toISOString().slice(0, 10);\nconst comp = c.mitbewerber.map(m => `${m.name} (${m.website || ''} ${m.instagram || ''})`).join('; ') || 'regionale Baufinanzierungsvermittler, Banken und Sparkassen';\n\nconst kunden = `Stand: ${heute}. Recherchiere, was Immobilienkäufer und Hausbesitzer in Deutschland – speziell in ${c.region} – aktuell bei Baufinanzierung bewegt.\nZielgruppe: ${c.zielgruppe}.\nLiefere: 1) die 10 häufigsten aktuellen Fragen/Sorgen (z. B. aus Foren, Reddit, gutefrage.net, Facebook-Gruppen, Google-Suchen, News),\n2) aktuelle Entwicklungen (Zinsumfeld allgemein, Förderprogramme, Gesetze wie GEG/Grundsteuer, regionaler Immobilienmarkt),\n3) Trend-Themen und Formate auf Instagram/TikTok rund um Immobilienkauf. Mit Quellen.`;\n\nconst wettbewerb = `Stand: ${heute}. Analysiere die Social-Media- und Content-Aktivitäten dieser Mitbewerber im Bereich Baufinanzierung: ${comp}.\nAußerdem: Was machen bekannte Baufinanzierungs-Accounts in Deutschland auf Instagram/Facebook erfolgreich (Themen, Formate, Hooks, Leadmagneten, Angebote)?\nWelche Themen werden NICHT gut abgedeckt? Mit Quellen.`;\n\nconst igUrls = c.mitbewerber.map(m => m.instagram).filter(Boolean);\nconst pageIds = c.mitbewerber.map(m => m.fb_page_id).filter(Boolean);\n\nreturn [{ json: {\n  perplexity_kunden: { model: 'sonar-pro', messages: [{ role: 'user', content: kunden }] },\n  perplexity_wettbewerb: { model: 'sonar-pro', messages: [{ role: 'user', content: wettbewerb }] },\n  apify_body: { directUrls: igUrls.length ? igUrls : ['https://www.instagram.com/instagram/'], resultsType: 'posts', resultsLimit: 8 },\n  page_ids: JSON.stringify(pageIds),\n  hat_mitbewerber: igUrls.length > 0,\n}}];\n"
+      }
+    },
+    {
+      "id": "0adb5f60-254f-585f-a88d-11969d2f1ce0",
+      "name": "Perplexity – Kundenthemen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.perplexity_kunden) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "c0e52c49-1fcf-5361-a094-68502cbd5258",
+      "name": "Perplexity – Mitbewerber",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.perplexity_wettbewerb) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "6a7fa25e-75a2-53c6-9841-104e3ee34aa7",
+      "name": "Apify – Instagram-Posts Mitbewerber",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.apify_body) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "734e8872-fcb8-51a6-ad46-608f206f271c",
+      "name": "Meta Ad Library – aktive Anzeigen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        600
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/ads_archive",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "search_page_ids",
+              "value": "={{ $json.page_ids }}"
+            },
+            {
+              "name": "ad_reached_countries",
+              "value": "['DE']"
+            },
+            {
+              "name": "ad_active_status",
+              "value": "ACTIVE"
+            },
+            {
+              "name": "limit",
+              "value": "25"
+            },
+            {
+              "name": "fields",
+              "value": "page_name,ad_creative_bodies,ad_creative_link_titles,ad_delivery_start_time,ad_snapshot_url"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "1c118374-8af9-59f7-9b23-e7619fd2ef78",
+      "name": "Alle Quellen sammeln",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        960,
+        300
+      ],
+      "parameters": {
+        "numberInputs": 4
+      }
+    },
+    {
+      "id": "96b8c77a-2c2d-56be-be4d-00279386f02c",
+      "name": "Claude-Prompt: Analyse",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst txt = n => { try { const j = $(n).first().json; return (j.choices?.[0]?.message?.content || '') + '\\nQuellen: ' + JSON.stringify(j.citations || j.search_results || []).slice(0, 3000); } catch (e) { return '(keine Daten)'; } };\nlet ig = '(keine Daten)';\ntry {\n  ig = JSON.stringify($('Apify – Instagram-Posts Mitbewerber').all().map(i => i.json)\n    .filter(p => p.caption).map(p => ({ account: p.ownerUsername, datum: p.timestamp, typ: p.type, likes: p.likesCount, kommentare: p.commentsCount, text: (p.caption || '').slice(0, 600) }))).slice(0, 15000);\n} catch (e) {}\nlet ads = '(keine Daten)';\ntry { ads = JSON.stringify($('Meta Ad Library – aktive Anzeigen').first().json.data || []).slice(0, 8000); } catch (e) {}\n\nconst system = `Du bist Content-Stratege für ${c.firma} (${c.leistung}), Region: ${c.region}.\nZielgruppe: ${c.zielgruppe}. Ansprache in Posts: \"${c.ansprache}\".\nAus Rechercheergebnissen leitest du ab, was Kunden bewegt, was Mitbewerber tun und wo Content-Lücken sind.\nErzeuge daraus 6 konkrete Post-Ideen für Instagram & Facebook (Mix aus ca. 4x bild, 2x video).\nJede Idee braucht einen Leadmagneten (kurzer Guide/Checkliste als Gamma-Dokument) und GENAU eines dieser Keywords:\n${Object.entries(c.keywords).map(([k, v]) => k + ' = ' + v).join('\\n')}\nWähle das Keyword, das inhaltlich zum Leadmagneten passt. Leadmagnet-Titel darf spezifischer sein als die Keyword-Beschreibung.\n${$('Konfiguration').first().json.__compliance || ''}\nAntworte auf Deutsch.`;\n\nconst user = `## Recherche: Kundenthemen\\n${txt('Perplexity – Kundenthemen')}\\n\\n## Recherche: Mitbewerber\\n${txt('Perplexity – Mitbewerber')}\\n\\n## Instagram-Posts der Mitbewerber (Rohdaten)\\n${ig}\\n\\n## Aktive Meta-Anzeigen der Mitbewerber\\n${ads}`;\n\nreturn [{ json: { claude_body: {\n  model: 'claude-opus-5-5',\n  max_tokens: 16000,\n  fallbacks: 'default',\n  output_config: { effort: 'medium', format: { type: 'json_schema', schema: {\"type\": \"object\", \"properties\": {\"zusammenfassung\": {\"type\": \"string\"}, \"kundenthemen\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"thema\": {\"type\": \"string\"}, \"warum_relevant\": {\"type\": \"string\"}, \"quelle\": {\"type\": \"string\"}}, \"required\": [\"thema\", \"warum_relevant\", \"quelle\"], \"additionalProperties\": false}}, \"mitbewerber\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}, \"beobachtung\": {\"type\": \"string\"}, \"was_wir_besser_machen\": {\"type\": \"string\"}}, \"required\": [\"name\", \"beobachtung\", \"was_wir_besser_machen\"], \"additionalProperties\": false}}, \"content_luecken\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"content_ideen\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"titel\": {\"type\": \"string\"}, \"hook\": {\"type\": \"string\"}, \"kernaussage\": {\"type\": \"string\"}, \"format\": {\"type\": \"string\", \"enum\": [\"bild\", \"video\"]}, \"keyword\": {\"type\": \"string\"}, \"leadmagnet_titel\": {\"type\": \"string\"}, \"leadmagnet_beschreibung\": {\"type\": \"string\"}}, \"required\": [\"titel\", \"hook\", \"kernaussage\", \"format\", \"keyword\", \"leadmagnet_titel\", \"leadmagnet_beschreibung\"], \"additionalProperties\": false}}}, \"required\": [\"zusammenfassung\", \"kundenthemen\", \"mitbewerber\", \"content_luecken\", \"content_ideen\"], \"additionalProperties\": false} } },\n  system: system + '\\n\\n' + \"Rechtliche Leitplanken (verbindlich, Werbung für Immobiliar-Verbraucherdarlehen in Deutschland):\\n- Nenne KEINE konkreten Zinssätze, Raten oder Effektivzinsen (sonst Pflichtangaben + repräsentatives Beispiel nach § 17 PAngV nötig).\\n- Keine Heilsversprechen oder Superlative (\\\"garantiert\\\", \\\"beste Konditionen\\\", \\\"immer\\\", \\\"sicher genehmigt\\\").\\n- Keine individuelle Beratung im Post – allgemeine Information, Beratung nur im Gespräch.\\n- Keine falschen Fakten zu Förderprogrammen; wenn unsicher, allgemein bleiben (\\\"aktuelle Förderprogramme prüfen\\\").\\n- Keine Mitbewerber namentlich nennen oder abwerten.\",\n  messages: [{ role: 'user', content: user }],\n}}}];\n"
+      }
+    },
+    {
+      "id": "1fb900fd-df37-544f-a7b2-94dba648db0d",
+      "name": "Claude – Analyse & Ideen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1400,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.claude_body) }}",
+        "options": {
+          "timeout": 300000
+        }
+      }
+    },
+    {
+      "id": "13969174-8289-5375-93e6-a196fb06a7a8",
+      "name": "Claude-Antwort parsen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1620,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Claude-Antwort lesen: Text-Block(s) einsammeln und als JSON parsen\nconst r = $input.first().json;\nif (r.stop_reason === 'refusal') {\n  throw new Error('Claude hat die Anfrage abgelehnt: ' + JSON.stringify(r.stop_details || {}));\n}\nif (r.stop_reason === 'max_tokens') {\n  throw new Error('Claude-Antwort abgeschnitten (max_tokens) – max_tokens im Prompt-Node erhöhen.');\n}\nconst text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');\nreturn [{ json: JSON.parse(text) }];\n"
+      }
+    },
+    {
+      "id": "a5d7ead6-ff89-5eab-bf4a-49ed279deba8",
+      "name": "Ideen als Zeilen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nconst jetzt = new Date();\nconst stamp = jetzt.toISOString().replace(/[-:T]/g, '').slice(0, 12);\nreturn r.content_ideen.map((i, n) => ({ json: {\n  idee_id: `I${stamp}${String(n + 1).padStart(2, '0')}`,\n  erstellt_am: jetzt.toISOString(),\n  titel: i.titel, hook: i.hook, kernaussage: i.kernaussage, format: i.format,\n  keyword: i.keyword.toUpperCase(),\n  leadmagnet_titel: i.leadmagnet_titel, leadmagnet_beschreibung: i.leadmagnet_beschreibung,\n  status: 'neu',\n}}));\n"
+      }
+    },
+    {
+      "id": "85b3a6d6-0594-57e7-9548-29e0de663f43",
+      "name": "Sheet: Ideen anhängen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2060,
+        200
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Ideen",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "25ee268f-03ac-59f8-90cc-6913e62b798d",
+      "name": "Recherche als Zeile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const r = $('Claude-Antwort parsen').first().json;\nreturn [{ json: {\n  datum: new Date().toISOString().slice(0, 10),\n  zusammenfassung: r.zusammenfassung,\n  kundenthemen: r.kundenthemen.map(k => `• ${k.thema}: ${k.warum_relevant} (${k.quelle})`).join('\\n'),\n  mitbewerber: r.mitbewerber.map(m => `• ${m.name}: ${m.beobachtung} → ${m.was_wir_besser_machen}`).join('\\n'),\n  content_luecken: r.content_luecken.join('\\n'),\n}}];\n"
+      }
+    },
+    {
+      "id": "b448a2a6-f707-5983-bf18-e72d63df4a89",
+      "name": "Sheet: Recherche anhängen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2060,
+        400
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Recherche",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "332a5f06-540c-5757-8f6c-2d41b3362191",
+      "name": "Telegram-Text Wochenreport",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        600
+      ],
+      "parameters": {
+        "jsCode": "const r = $('Claude-Antwort parsen').first().json;\nconst e = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nlet t = `📊 <b>Wochen-Recherche</b>\\n\\n${e(r.zusammenfassung)}\\n\\n<b>Was Kunden bewegt</b>\\n`;\nt += r.kundenthemen.slice(0, 5).map(k => '• ' + e(k.thema)).join('\\n');\nt += '\\n\\n<b>Mitbewerber</b>\\n' + r.mitbewerber.slice(0, 4).map(m => `• ${e(m.name)}: ${e(m.beobachtung)}`).join('\\n');\nt += '\\n\\n<b>Neue Post-Ideen</b>\\n' + r.content_ideen.map(i => `• [${i.format}] ${e(i.titel)} → ${e(i.keyword)}`).join('\\n');\nreturn [{ json: { text: t.slice(0, 4000) } }];\n"
+      }
+    },
+    {
+      "id": "a0ef4620-abd3-55e2-866c-61254eb89f7e",
+      "name": "Telegram: Wochenreport",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2060,
+        600
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Recherche-Anfragen bauen": {
+      "main": [
+        [
+          {
+            "node": "Perplexity – Kundenthemen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Perplexity – Mitbewerber",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Apify – Instagram-Posts Mitbewerber",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Meta Ad Library – aktive Anzeigen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity – Kundenthemen": {
+      "main": [
+        [
+          {
+            "node": "Alle Quellen sammeln",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity – Mitbewerber": {
+      "main": [
+        [
+          {
+            "node": "Alle Quellen sammeln",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Apify – Instagram-Posts Mitbewerber": {
+      "main": [
+        [
+          {
+            "node": "Alle Quellen sammeln",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Meta Ad Library – aktive Anzeigen": {
+      "main": [
+        [
+          {
+            "node": "Alle Quellen sammeln",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Jeden Montag 06:00": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Recherche-Anfragen bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alle Quellen sammeln": {
+      "main": [
+        [
+          {
+            "node": "Claude-Prompt: Analyse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude-Prompt: Analyse": {
+      "main": [
+        [
+          {
+            "node": "Claude – Analyse & Ideen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude – Analyse & Ideen": {
+      "main": [
+        [
+          {
+            "node": "Claude-Antwort parsen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude-Antwort parsen": {
+      "main": [
+        [
+          {
+            "node": "Ideen als Zeilen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Recherche als Zeile",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telegram-Text Wochenreport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ideen als Zeilen": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Ideen anhängen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recherche als Zeile": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Recherche anhängen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram-Text Wochenreport": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Wochenreport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin"
+  },
+  "pinData": {},
+  "active": false
+}

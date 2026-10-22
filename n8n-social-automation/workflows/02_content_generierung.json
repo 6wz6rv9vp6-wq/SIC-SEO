@@ -1,0 +1,1014 @@
+{
+  "name": "02 Content-Generierung – Post, Medien & Gamma-Leadmagnet",
+  "nodes": [
+    {
+      "id": "ee48d29c-599d-5f42-a7c4-694f3f5db0f3",
+      "name": "Mo/Mi/Fr 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1,3,5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "22967aac-27fe-59d8-a19b-f49d217f123c",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "ad7d1fe3-6340-5ebb-9c54-e4961a8382cb",
+      "name": "Sheet: neue Ideen lesen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Ideen",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "neu"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c2cc0d5e-c1de-582f-b91b-4c59177abb3c",
+      "name": "Nächste Idee",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "maxItems": 1
+      }
+    },
+    {
+      "id": "5606e8dd-d57d-546a-b784-cde095b1e4de",
+      "name": "Claude-Prompt: Post",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst i = $input.first().json;\nconst kwText = c.keywords[i.keyword] || i.leadmagnet_titel;\nconst system = `Du schreibst Social-Media-Posts für ${c.firma} (${c.ansprechpartner}), ${c.leistung}. Region: ${c.region}.\nZielgruppe: ${c.zielgruppe}. Ansprache: \"${c.ansprache}\". Ton: nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis.\nAufbau Instagram-Caption: starker Hook in Zeile 1 → 3–6 kurze Absätze mit echtem Mehrwert → Call-to-Action:\n\"Kommentiere ${i.keyword} und ich schicke dir ${kwText} kostenlos per DM.\" (max. 2.000 Zeichen, ohne Hashtags).\nFacebook-Text: gleiche Botschaft, etwas ausführlicher, gleicher CTA mit Keyword ${i.keyword}, zusätzlich Hinweis auf Terminbuchung: ${c.termin_link}.\nhashtags: 8–12 passende deutsche Hashtags inkl. regionaler (#braunschweig #göttingen), als ein String.\nbild_prompt: ENGLISCHER Prompt für ein fotorealistisches Bild im Hochformat 4:5, authentisch, keine Schrift/Logos/Zahlen im Bild, keine erkennbaren realen Personen.\nvideo_prompt: ENGLISCHER Prompt für einen 5–10 s Clip im Hochformat 9:16 (B-Roll, ruhige Kamerafahrt), ohne Schrift im Bild.\nalt_text: deutsche Bildbeschreibung (Barrierefreiheit).\nleadmagnet_inhalt: ausführliche Gliederung + Inhalte (Markdown) für den Leadmagneten \"${i.leadmagnet_titel}\" – 6–8 Abschnitte, praxisnah, mit Checklisten. Letzter Abschnitt: Einladung zum kostenlosen Beratungsgespräch (${c.termin_link}).\n\nRechtliche Leitplanken (verbindlich, Werbung für Immobiliar-Verbraucherdarlehen in Deutschland):\\n- Nenne KEINE konkreten Zinssätze, Raten oder Effektivzinsen (sonst Pflichtangaben + repräsentatives Beispiel nach § 17 PAngV nötig).\\n- Keine Heilsversprechen oder Superlative (\\\"garantiert\\\", \\\"beste Konditionen\\\", \\\"immer\\\", \\\"sicher genehmigt\\\").\\n- Keine individuelle Beratung im Post – allgemeine Information, Beratung nur im Gespräch.\\n- Keine falschen Fakten zu Förderprogrammen; wenn unsicher, allgemein bleiben (\\\"aktuelle Förderprogramme prüfen\\\").\\n- Keine Mitbewerber namentlich nennen oder abwerten.`;\nconst user = `Post-Idee:\\nTitel: ${i.titel}\\nHook: ${i.hook}\\nKernaussage: ${i.kernaussage}\\nFormat: ${i.format}\\nLeadmagnet: ${i.leadmagnet_titel} – ${i.leadmagnet_beschreibung}\\nKeyword: ${i.keyword}`;\nreturn [{ json: { idee: i, claude_body: {\n  model: 'claude-opus-5-5',\n  max_tokens: 16000,\n  fallbacks: 'default',\n  output_config: { effort: 'medium', format: { type: 'json_schema', schema: {\"type\": \"object\", \"properties\": {\"caption_instagram\": {\"type\": \"string\"}, \"text_facebook\": {\"type\": \"string\"}, \"hashtags\": {\"type\": \"string\"}, \"bild_prompt\": {\"type\": \"string\"}, \"video_prompt\": {\"type\": \"string\"}, \"alt_text\": {\"type\": \"string\"}, \"leadmagnet_inhalt\": {\"type\": \"string\"}}, \"required\": [\"caption_instagram\", \"text_facebook\", \"hashtags\", \"bild_prompt\", \"video_prompt\", \"alt_text\", \"leadmagnet_inhalt\"], \"additionalProperties\": false} } },\n  system,\n  messages: [{ role: 'user', content: user }],\n}}}];\n"
+      }
+    },
+    {
+      "id": "19c877fe-047a-5b4f-8677-b999cc70ff46",
+      "name": "Claude – Post schreiben",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.claude_body) }}",
+        "options": {
+          "timeout": 300000
+        }
+      }
+    },
+    {
+      "id": "2e72dc40-a169-56f6-90f2-c82d872c105c",
+      "name": "Claude-Antwort parsen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Claude-Antwort lesen: Text-Block(s) einsammeln und als JSON parsen\nconst r = $input.first().json;\nif (r.stop_reason === 'refusal') {\n  throw new Error('Claude hat die Anfrage abgelehnt: ' + JSON.stringify(r.stop_details || {}));\n}\nif (r.stop_reason === 'max_tokens') {\n  throw new Error('Claude-Antwort abgeschnitten (max_tokens) – max_tokens im Prompt-Node erhöhen.');\n}\nconst text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');\nreturn [{ json: JSON.parse(text) }];\n"
+      }
+    },
+    {
+      "id": "639823f5-b88d-55f1-a762-d01928a17786",
+      "name": "Post-Daten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const p = $input.first().json;\nconst i = $('Claude-Prompt: Post').first().json.idee;\nconst c = $('Konfiguration').first().json;\nconst post_id = 'P' + new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);\nconst gamma = {\n  inputText: `# ${i.leadmagnet_titel}\\n\\n${p.leadmagnet_inhalt}`,\n  textMode: 'generate',\n  format: 'document',\n  numCards: 8,\n  exportAs: 'pdf',\n  additionalInstructions: `Leadmagnet von ${c.firma}. Seriös, hell, modern. Kontakt & Termin am Ende: ${c.termin_link}. Keine konkreten Zinssätze.`,\n  textOptions: { amount: 'medium', tone: 'kompetent, freundlich, verständlich', audience: c.zielgruppe, language: 'de' },\n  imageOptions: { source: 'aiGenerated' },\n  sharingOptions: { externalAccess: 'view' },\n};\nif (c.gamma_theme_id) gamma.themeId = c.gamma_theme_id;\nreturn [{ json: { ...p, post_id, idee_id: i.idee_id, format: i.format, keyword: i.keyword, leadmagnet_titel: i.leadmagnet_titel, gamma_body: gamma } }];\n"
+      }
+    },
+    {
+      "id": "0749b525-d20c-510a-be5b-17580a0e5b15",
+      "name": "Gamma – Leadmagnet erzeugen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://public-api.gamma.app/v1.0/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.gamma_body) }}",
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "83589544-3873-5712-9581-4b6ee4f5c51a",
+      "name": "Gamma: 20 s warten",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1980,
+        300
+      ],
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "webhookId": "3b9d5b6f-eecc-5fe9-a1b6-7bc8d3908cc0"
+    },
+    {
+      "id": "63144875-afa3-56fb-9060-3ee07a6b6d4c",
+      "name": "Gamma – Status abfragen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://public-api.gamma.app/v1.0/generations/{{ $('Gamma – Leadmagnet erzeugen').first().json.generationId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "e3c68250-26c4-5021-942e-4a51131723fd",
+      "name": "Gamma-Status auswerten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const s = $input.first().json;\nif (s.status === 'failed') throw new Error('Gamma-Generierung fehlgeschlagen: ' + JSON.stringify(s));\nreturn [{ json: s }];\n"
+      }
+    },
+    {
+      "id": "766be458-4482-53a0-8bd7-ae5737bb87cd",
+      "name": "Gamma fertig?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "6e11b91f-5aeb-48c5-a0fa-3fe8af4c41e4",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "5a52bbaa-5407-5b11-98c6-d00189a0c3be",
+      "name": "Gamma-Ergebnis merken",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// läuft nur einmal (nach der Warteschleife) – spätere Nodes lesen hier\nconst s = $input.first().json;\nreturn [{ json: { gammaUrl: s.gammaUrl || '', exportUrl: s.exportUrl || '' } }];\n"
+      }
+    },
+    {
+      "id": "e4285d80-d5a7-5180-aee9-5f94db0e5e88",
+      "name": "Video-Post?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "a700b580-5a3d-4184-ba1e-2912b754b8ac",
+              "leftValue": "={{ $('Post-Daten').first().json.format }}",
+              "rightValue": "video",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "86b59365-6679-5524-88e8-7800b161f82c",
+      "name": "fal.ai – Bild erzeugen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3080,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://fal.run/{{ $('Konfiguration').first().json.fal_image_model }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $('Post-Daten').first().json.bild_prompt, image_size: { width: 1080, height: 1350 }, num_images: 1, output_format: 'jpeg' }) }}",
+        "options": {
+          "timeout": 180000
+        }
+      }
+    },
+    {
+      "id": "0823af3f-d1a5-5f8b-ac73-e38782bed500",
+      "name": "fal.ai – Video beauftragen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3080,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://queue.fal.run/{{ $('Konfiguration').first().json.fal_video_model }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $('Post-Daten').first().json.video_prompt, duration: '5', aspect_ratio: '9:16' }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "6c6b10bd-4c52-5b2d-9285-a1ff8fa3315a",
+      "name": "Video: 45 s warten",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3300,
+        100
+      ],
+      "parameters": {
+        "amount": 45,
+        "unit": "seconds"
+      },
+      "webhookId": "9315ae50-753b-5857-8d2d-75177c867d7a"
+    },
+    {
+      "id": "59822b8d-9a85-51e5-a8bf-2b5287fc8707",
+      "name": "fal.ai – Video-Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3520,
+        100
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('fal.ai – Video beauftragen').first().json.status_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "6865613c-a457-57a7-a61d-66b3ead14ce0",
+      "name": "Video fertig?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "937dea76-45c9-4570-9785-de11d5df3aad",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "COMPLETED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "21a26ef8-320a-5dc0-9954-024f55173072",
+      "name": "fal.ai – Video abholen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3960,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('fal.ai – Video beauftragen').first().json.response_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "491b4687-bb64-5108-89cd-44339c8d99e8",
+      "name": "Post-Zeile bauen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4200,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Post-Daten').first().json;\nconst g = $('Gamma-Ergebnis merken').first().json;\nconst r = $input.first().json;\nconst media_url = p.format === 'video' ? (r.video?.url || '') : (r.images?.[0]?.url || '');\nif (!media_url) throw new Error('Keine Medien-URL erhalten: ' + JSON.stringify(r).slice(0, 500));\nreturn [{ json: {\n  post_id: p.post_id,\n  idee_id: p.idee_id,\n  erstellt_am: new Date().toISOString(),\n  format: p.format,\n  media_url,\n  caption_instagram: p.caption_instagram + '\\n\\n' + p.hashtags,\n  text_facebook: p.text_facebook,\n  alt_text: p.alt_text,\n  keyword: p.keyword,\n  leadmagnet_titel: p.leadmagnet_titel,\n  gamma_url: g.gammaUrl || '',\n  gamma_pdf_url: g.exportUrl || '',\n  status: 'wartet_auf_freigabe',\n  ig_media_id: '', fb_post_id: '', permalink: '', veroeffentlicht_am: '',\n  reichweite: '', views: '', likes: '', kommentare: '', gespeichert: '', geteilt: '', leads: 0, letzter_check: '',\n}}];\n"
+      }
+    },
+    {
+      "id": "f6d5e18b-7018-50b0-a6d2-a2e512a97309",
+      "name": "Sheet: Post speichern",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4420,
+        300
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "8e0b7f41-6f4b-5391-88c4-bd4f1c8f23ba",
+      "name": "Idee-Status setzen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4640,
+        300
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { idee_id: $('Post-Zeile bauen').first().json.idee_id, status: 'in_freigabe' } }];\n"
+      }
+    },
+    {
+      "id": "90e44383-d67f-54f3-b628-3089138979d2",
+      "name": "Sheet: Idee aktualisieren",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4860,
+        300
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Ideen",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "idee_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c8aa81e3-fd49-5f4c-bb0f-a4b6808e9233",
+      "name": "Video? (Telegram)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        5080,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "4d5b6079-5ab9-46e3-bc20-49eb4cba1a06",
+              "leftValue": "={{ $('Post-Zeile bauen').first().json.format }}",
+              "rightValue": "video",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a1ce9d98-b7b2-5f20-8fd5-709b43da0c7b",
+      "name": "Telegram: Video senden",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5300,
+        200
+      ],
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "file": "={{ $('Post-Zeile bauen').first().json.media_url }}",
+        "additionalFields": {
+          "caption": "=🎬 Entwurf {{ $('Post-Zeile bauen').first().json.post_id }}"
+        }
+      }
+    },
+    {
+      "id": "fb635e35-278f-5c2b-bd17-5b3dd56e8c2d",
+      "name": "Telegram: Bild senden",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5300,
+        400
+      ],
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "file": "={{ $('Post-Zeile bauen').first().json.media_url }}",
+        "additionalFields": {
+          "caption": "=🖼 Entwurf {{ $('Post-Zeile bauen').first().json.post_id }}"
+        }
+      }
+    },
+    {
+      "id": "53bb40a4-4e94-5a52-9d43-ace9a30afae5",
+      "name": "Freigabe-Text bauen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5520,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Post-Zeile bauen').first().json;\nconst e = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nlet t = `📝 <b>Freigabe: ${e(p.post_id)}</b> (${e(p.format)})\\n\\n<b>Instagram</b>\\n${e(p.caption_instagram)}\\n\\n<b>Facebook</b>\\n${e(p.text_facebook)}`;\nt = t.slice(0, 3500);\nt += `\\n\\n🎁 Leadmagnet: <a href=\"${e(p.gamma_url)}\">${e(p.leadmagnet_titel)}</a>\\n🔑 Keyword: <b>${e(p.keyword)}</b>`;\nreturn [{ json: { text: t, post_id: p.post_id } }];\n"
+      }
+    },
+    {
+      "id": "8e3c7ed2-249e-52a1-b2b2-c086a3452054",
+      "name": "Telegram: Freigabe anfragen",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5740,
+        300
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        },
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Freigeben & posten",
+                    "additionalFields": {
+                      "callback_data": "=ok|{{ $json.post_id }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🔁 Neu erzeugen",
+                    "additionalFields": {
+                      "callback_data": "=neu|{{ $json.post_id }}"
+                    }
+                  },
+                  {
+                    "text": "❌ Verwerfen",
+                    "additionalFields": {
+                      "callback_data": "=nein|{{ $json.post_id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Mo/Mi/Fr 07:00": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Sheet: neue Ideen lesen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: neue Ideen lesen": {
+      "main": [
+        [
+          {
+            "node": "Nächste Idee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nächste Idee": {
+      "main": [
+        [
+          {
+            "node": "Claude-Prompt: Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude-Prompt: Post": {
+      "main": [
+        [
+          {
+            "node": "Claude – Post schreiben",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude – Post schreiben": {
+      "main": [
+        [
+          {
+            "node": "Claude-Antwort parsen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude-Antwort parsen": {
+      "main": [
+        [
+          {
+            "node": "Post-Daten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-Daten": {
+      "main": [
+        [
+          {
+            "node": "Gamma – Leadmagnet erzeugen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gamma – Leadmagnet erzeugen": {
+      "main": [
+        [
+          {
+            "node": "Gamma: 20 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gamma: 20 s warten": {
+      "main": [
+        [
+          {
+            "node": "Gamma – Status abfragen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gamma – Status abfragen": {
+      "main": [
+        [
+          {
+            "node": "Gamma-Status auswerten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gamma-Status auswerten": {
+      "main": [
+        [
+          {
+            "node": "Gamma fertig?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gamma fertig?": {
+      "main": [
+        [
+          {
+            "node": "Gamma-Ergebnis merken",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gamma: 20 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gamma-Ergebnis merken": {
+      "main": [
+        [
+          {
+            "node": "Video-Post?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video-Post?": {
+      "main": [
+        [
+          {
+            "node": "fal.ai – Video beauftragen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "fal.ai – Bild erzeugen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fal.ai – Video beauftragen": {
+      "main": [
+        [
+          {
+            "node": "Video: 45 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video: 45 s warten": {
+      "main": [
+        [
+          {
+            "node": "fal.ai – Video-Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fal.ai – Video-Status": {
+      "main": [
+        [
+          {
+            "node": "Video fertig?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video fertig?": {
+      "main": [
+        [
+          {
+            "node": "fal.ai – Video abholen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Video: 45 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fal.ai – Video abholen": {
+      "main": [
+        [
+          {
+            "node": "Post-Zeile bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fal.ai – Bild erzeugen": {
+      "main": [
+        [
+          {
+            "node": "Post-Zeile bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-Zeile bauen": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Post speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Post speichern": {
+      "main": [
+        [
+          {
+            "node": "Idee-Status setzen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Idee-Status setzen": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Idee aktualisieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Idee aktualisieren": {
+      "main": [
+        [
+          {
+            "node": "Video? (Telegram)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video? (Telegram)": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Video senden",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram: Bild senden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram: Video senden": {
+      "main": [
+        [
+          {
+            "node": "Freigabe-Text bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram: Bild senden": {
+      "main": [
+        [
+          {
+            "node": "Freigabe-Text bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Freigabe-Text bauen": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Freigabe anfragen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin"
+  },
+  "pinData": {},
+  "active": false
+}

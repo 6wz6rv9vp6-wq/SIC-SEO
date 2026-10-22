@@ -1,0 +1,442 @@
+{
+  "name": "04 Monitoring – Kennzahlen & Kommentare",
+  "nodes": [
+    {
+      "id": "5224af9c-3e0c-5649-8301-56585b336d17",
+      "name": "Alle 3 Std. (8–20 Uhr)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8-20/3 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "535ba4b0-9474-5d34-ae91-a30e4e6f5f78",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "910572a2-ee90-5d73-8d98-66dc8a57c490",
+      "name": "Sheet: veröffentlichte Posts",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "veroeffentlicht"
+            }
+          ]
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "fb91868d-75fe-5b09-8788-9b607e924f9c",
+      "name": "Posts der letzten 14 Tage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const grenze = Date.now() - 14 * 24 * 3600 * 1000;\nreturn $input.all().filter(i => i.json.ig_media_id && new Date(i.json.veroeffentlicht_am).getTime() > grenze);\n"
+      }
+    },
+    {
+      "id": "774ebc10-3c15-586d-8dcf-113d5a5605d7",
+      "name": "Instagram: Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $json.ig_media_id }}/insights",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "metric",
+              "value": "reach,views,likes,comments,saved,shares"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "29806f76-da92-5700-b216-f9ceb16da93d",
+      "name": "Instagram: Kommentare",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Posts der letzten 14 Tage').item.json.ig_media_id }}/comments",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,text,username,timestamp"
+            },
+            {
+              "name": "limit",
+              "value": "50"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e66b86aa-e7e5-5d1d-a373-b748bdd96306",
+      "name": "Kennzahlen zusammenführen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst posts = $('Posts der letzten 14 Tage').all();\nconst ins = $('Instagram: Insights').all();\nconst kom = $('Instagram: Kommentare').all();\nconst kws = Object.keys(c.keywords);\nconst zeilen = [], neu = [];\nposts.forEach((p, n) => {\n  const m = {};\n  (ins[n]?.json?.data || []).forEach(d => { m[d.name] = d.values?.[0]?.value ?? d.total_value?.value ?? ''; });\n  const seit = p.json.letzter_check ? new Date(p.json.letzter_check).getTime() : 0;\n  (kom[n]?.json?.data || []).filter(k => new Date(k.timestamp).getTime() > seit).forEach(k => {\n    neu.push({ comment_id: k.id, post_id: p.json.post_id, username: k.username, text: k.text,\n      ist_keyword: kws.some(w => (k.text || '').toUpperCase().includes(w)) });\n  });\n  zeilen.push({ post_id: p.json.post_id, reichweite: m.reach ?? '', views: m.views ?? '', likes: m.likes ?? '',\n    kommentare: m.comments ?? '', gespeichert: m.saved ?? '', geteilt: m.shares ?? '', letzter_check: new Date().toISOString() });\n});\n// Engagement-Rate je Post: (Likes+Kommentare+Gespeichert+Geteilt)/Reichweite\nconst er = z => z.reichweite ? (Number(z.likes||0)+Number(z.kommentare||0)+Number(z.gespeichert||0)+Number(z.geteilt||0)) / Number(z.reichweite) : 0;\nconst schnitt = zeilen.length ? zeilen.reduce((s, z) => s + er(z), 0) / zeilen.length : 0;\nconst top = zeilen.filter(z => zeilen.length >= 3 && er(z) > schnitt * 1.5 && Number(z.reichweite) > 300).map(z => z.post_id);\nreturn zeilen.map((z, n) => ({ json: z, pairedItem: n }))\n  .concat([{ json: { __meta: true, neue_kommentare: neu, top_posts: top, schnitt_er: schnitt } }]);\n"
+      }
+    },
+    {
+      "id": "4d8ac891-f855-51fe-8728-b139feeca5c1",
+      "name": "Nur Kennzahl-Zeilen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        160
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().filter(i => !i.json.__meta);\n"
+      }
+    },
+    {
+      "id": "da02e4e9-48b3-5d3d-887d-2dc59f23fd63",
+      "name": "Sheet: Kennzahlen aktualisieren",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1760,
+        160
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "9fbda189-28e0-5549-b511-1255e5cd69f7",
+      "name": "Neue Kommentare?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        440
+      ],
+      "parameters": {
+        "jsCode": "const m = $input.all().find(i => i.json.__meta).json;\n// Keyword-Kommentare beantwortet ManyChat – nur die übrigen an Claude\nconst rest = m.neue_kommentare.filter(k => !k.ist_keyword);\nif (!rest.length && !m.top_posts.length) return [];\nconst c = $('Konfiguration').first().json;\nreturn [{ json: { meta: m, rest, claude_body: {\n  model: 'claude-opus-5-5',\n  max_tokens: 8000,\n  fallbacks: 'default',\n  output_config: { effort: 'low', format: { type: 'json_schema', schema: {\"type\": \"object\", \"properties\": {\"kommentare\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"comment_id\": {\"type\": \"string\"}, \"kategorie\": {\"type\": \"string\", \"enum\": [\"keyword_manychat\", \"frage\", \"lead_interesse\", \"lob\", \"kritik\", \"spam\", \"sonstiges\"]}, \"dringend\": {\"type\": \"boolean\"}, \"antwortvorschlag\": {\"type\": \"string\"}}, \"required\": [\"comment_id\", \"kategorie\", \"dringend\", \"antwortvorschlag\"], \"additionalProperties\": false}}}, \"required\": [\"kommentare\"], \"additionalProperties\": false} } },\n  system: `Du betreust die Social-Media-Kommentare von ${c.firma} (${c.leistung}). Kategorisiere jeden Kommentar und schreibe einen kurzen, freundlichen Antwortvorschlag (Ansprache \"${c.ansprache}\", max. 2 Sätze, keine konkreten Zinssätze, bei individuellen Fragen auf DM/Beratungstermin verweisen). \"dringend\" = Kritik, Beschwerde oder klares Kaufinteresse.`,\n  messages: [{ role: 'user', content: JSON.stringify(rest.length ? rest : [{ comment_id: 'none', text: '(keine)' }]) }],\n}}}];\n"
+      }
+    },
+    {
+      "id": "6f7e2e6d-a6ee-5b37-9f4d-a7e7d7864c3b",
+      "name": "Claude – Kommentare bewerten",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.claude_body) }}",
+        "options": {
+          "timeout": 300000
+        }
+      }
+    },
+    {
+      "id": "8ea92837-82cb-50d8-90b4-d1a43973ba40",
+      "name": "Claude-Antwort parsen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        440
+      ],
+      "parameters": {
+        "jsCode": "// Claude-Antwort lesen: Text-Block(s) einsammeln und als JSON parsen\nconst r = $input.first().json;\nif (r.stop_reason === 'refusal') {\n  throw new Error('Claude hat die Anfrage abgelehnt: ' + JSON.stringify(r.stop_details || {}));\n}\nif (r.stop_reason === 'max_tokens') {\n  throw new Error('Claude-Antwort abgeschnitten (max_tokens) – max_tokens im Prompt-Node erhöhen.');\n}\nconst text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');\nreturn [{ json: JSON.parse(text) }];\n"
+      }
+    },
+    {
+      "id": "b4dc1bd1-8e9d-5ef1-8995-e7b65c130ac5",
+      "name": "Telegram-Text Monitoring",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        440
+      ],
+      "parameters": {
+        "jsCode": "const { meta, rest } = $('Neue Kommentare?').first().json;\nconst bewertet = $input.first().json.kommentare || [];\nconst e = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst icon = { frage: '❓', lead_interesse: '🔥', lob: '👍', kritik: '⚠️', spam: '🗑', sonstiges: '💬', keyword_manychat: '🔑' };\nlet t = '👀 <b>Social-Monitoring</b>\\n';\nconst kw = meta.neue_kommentare.length - rest.length;\nif (kw) t += `\\n🔑 ${kw} Keyword-Kommentar(e) → ManyChat übernimmt.`;\nbewertet.filter(b => b.kategorie !== 'spam').forEach(b => {\n  const k = rest.find(r => r.comment_id === b.comment_id) || {};\n  t += `\\n\\n${icon[b.kategorie] || '💬'} ${b.dringend ? '<b>DRINGEND</b> ' : ''}@${e(k.username)} (${e(k.post_id)}):\\n„${e(k.text)}“\\n↳ Vorschlag: ${e(b.antwortvorschlag)}`;\n});\nif (meta.top_posts.length) t += `\\n\\n🚀 Überdurchschnittlich: ${meta.top_posts.join(', ')} – als Anzeige boosten?`;\nreturn [{ json: { text: t.slice(0, 4000) } }];\n"
+      }
+    },
+    {
+      "id": "22b99eb1-abfd-5ab8-a917-35b017f32d69",
+      "name": "Telegram: Monitoring",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2420,
+        440
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Alle 3 Std. (8–20 Uhr)": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Sheet: veröffentlichte Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: veröffentlichte Posts": {
+      "main": [
+        [
+          {
+            "node": "Posts der letzten 14 Tage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Posts der letzten 14 Tage": {
+      "main": [
+        [
+          {
+            "node": "Instagram: Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram: Insights": {
+      "main": [
+        [
+          {
+            "node": "Instagram: Kommentare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram: Kommentare": {
+      "main": [
+        [
+          {
+            "node": "Kennzahlen zusammenführen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kennzahlen zusammenführen": {
+      "main": [
+        [
+          {
+            "node": "Nur Kennzahl-Zeilen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Neue Kommentare?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nur Kennzahl-Zeilen": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Kennzahlen aktualisieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neue Kommentare?": {
+      "main": [
+        [
+          {
+            "node": "Claude – Kommentare bewerten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude – Kommentare bewerten": {
+      "main": [
+        [
+          {
+            "node": "Claude-Antwort parsen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude-Antwort parsen": {
+      "main": [
+        [
+          {
+            "node": "Telegram-Text Monitoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram-Text Monitoring": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Monitoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin"
+  },
+  "pinData": {},
+  "active": false
+}
