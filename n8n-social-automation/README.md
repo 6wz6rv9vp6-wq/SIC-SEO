@@ -1,6 +1,6 @@
 # Social-Media-Automation mit n8n
 
-Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Instagram & Facebook mit Gamma-Leadmagnet → Monitoring & ManyChat-Leads.
+Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Instagram & Facebook mit Gamma-Leadmagnet → Monitoring & Leads über Komently.
 
 ```
  Mo 06:00                Mo/Mi/Fr 07:00                       Klick in Telegram
@@ -12,7 +12,9 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 │ Claude       │         └──────────────────────────┘         └───────────┬────────────┘
 └──────────────┘                                                          │ live
                                                                           ▼
-  Kommentar „CHECKLISTE“ ──▶ ManyChat ──DM + E-Mail──▶ 05 Webhook ──▶ Gamma-Link zurück, Lead → Sheet/Telegram/HYPOFY
+  Kommentar „CHECKLISTE“ ──▶ Komently: DM, E-Mail abfragen, Guide-Link senden
+                               │ Guide-Link /webhook/guide/CHECKLISTE ──▶ 06 leitet zum neuesten Gamma-Guide weiter
+                               └ Lead per Webhook ──▶ 05 ──▶ Sheet / Telegram / (HYPOFY)
   alle 3 Std. ──▶ 04 Monitoring: Insights, neue Kommentare (Claude bewertet + Antwortvorschlag) ──▶ Telegram
   Jeder Fehler ──▶ 00 Fehler-Alarm ──▶ Telegram
 ```
@@ -24,8 +26,12 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 | `workflows/02_content_generierung.json` | Caption IG/FB, Hashtags, Bild oder Reel, Gamma-Leadmagnet, Telegram-Freigabe | Mo/Mi/Fr 07:00 |
 | `workflows/03_freigabe_posting.json` | Button-Klick auswerten, auf Instagram + Facebook posten | Telegram-Button |
 | `workflows/04_monitoring.json` | Reichweite/Likes/Saves/Shares, neue Kommentare, Top-Posts | alle 3 Std. 8–20 Uhr |
-| `workflows/05_manychat_leads.json` | Liefert ManyChat den passenden Gamma-Link, speichert den Lead | Webhook von ManyChat |
+| `workflows/05_lead_webhook.json` | Speichert Leads aus Komently (oder ManyChat), Telegram-Meldung | Webhook von Komently |
+| `workflows/06_guide_link.json` | Fester Link je Keyword, leitet auf den neuesten Gamma-Guide weiter | Klick auf den Guide-Link |
 | `vorlagen/*.csv` | Spaltenköpfe für das Google Sheet (4 Tabs) | – |
+| `installation/` | n8n installieren: Anleitung, Docker-Compose, Backup-Skript | – |
+
+> **n8n noch nicht installiert?** Zuerst `installation/INSTALLATION.md` durchgehen.
 
 ---
 
@@ -33,7 +39,7 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 
 | Dienst | Wofür | Hinweis |
 |---|---|---|
-| **n8n** (Cloud oder selbst gehostet) | Orchestrierung | Muss öffentlich per HTTPS erreichbar sein (Telegram- und ManyChat-Webhooks) |
+| **n8n** (Cloud oder selbst gehostet) | Orchestrierung | Muss öffentlich per HTTPS erreichbar sein (Telegram- und Komently-Webhooks) |
 | **Anthropic API** | Analyse, Texte, Kommentar-Bewertung | Modell `claude-opus-5-5`; ca. 1–5 € / Monat bei diesem Volumen |
 | **Perplexity API** | Web-Recherche mit Quellen | Modell `sonar-pro` |
 | **Apify** (optional) | Instagram-Posts der Mitbewerber | Actor `apify/instagram-scraper` |
@@ -41,7 +47,7 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 | **fal.ai** | Bild (Flux) und Video (Kling) | Modelle in der Konfiguration austauschbar |
 | **Gamma** | Leadmagnet als Dokument/PDF | API-Zugriff ab Pro-Plan |
 | **Telegram-Bot** | Freigabe & Benachrichtigungen | über @BotFather |
-| **ManyChat Pro** | Kommentar → DM → E-Mail abfragen | Instagram + Facebook Messenger |
+| **Komently** | Kommentar → DM → E-Mail abfragen → Guide senden | Instagram + Facebook; E-Mail-Abfrage laut Komently im Pro-Tarif |
 | **Google Sheets** | Datenbasis (Ideen, Posts, Leads) | 1 Sheet mit 4 Tabs |
 
 ## 2. Einrichtung Schritt für Schritt
@@ -58,14 +64,13 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
    | Header Auth | Apify API | Name `Authorization`, Wert `Bearer <TOKEN>` |
    | Header Auth | fal.ai API | Name `Authorization`, Wert `Key <FAL_KEY>` |
    | Header Auth | Gamma API | Name `X-API-KEY`, Wert = Gamma-Key |
-   | Header Auth | ManyChat Webhook | Name `X-Webhook-Token`, Wert = selbst gewähltes langes Geheimnis |
    | Query Auth | Meta Page Token | Name `access_token`, Wert = langlebiger **Page Access Token** |
    | Telegram API | Telegram Bot | Bot-Token |
    | Google Sheets OAuth2 | Google Sheets | Google-Login |
 
-5. **Konfiguration ausfüllen**: Jeder Workflow beginnt mit dem Code-Node **„Konfiguration“** – dort Firma, Region, Zielgruppe, Ansprache (du/Sie), Termin-Link, Mitbewerber, Sheet-ID, Telegram-Chat-ID, Instagram-/Facebook-IDs eintragen. Am einfachsten einmal ausfüllen und den Node in alle Workflows kopieren.
+5. **Konfiguration ausfüllen**: Jeder Workflow beginnt mit dem Code-Node **„Konfiguration“** – dort Firma, Region, Zielgruppe, Ansprache (du/Sie), Termin-Link, Mitbewerber, Sheet-ID, Telegram-Chat-ID, Instagram-/Facebook-IDs und `webhook_token` (Zufallswert, z. B. `openssl rand -hex 24`) eintragen. Am einfachsten einmal ausfüllen und den Node in alle Workflows kopieren.
 6. **Fehler-Workflow verknüpfen**: In Workflow 01–05 unter *Settings → Error Workflow* „00 Fehler-Alarm“ wählen.
-7. **Testen in dieser Reihenfolge** (jeweils „Execute Workflow“): 01 → prüfen, ob Ideen im Sheet stehen → 02 → Entwurf kommt in Telegram → 03 aktivieren und auf „✅ Freigeben“ tippen → Post ist live → 05 mit ManyChat testen → 04 laufen lassen.
+7. **Testen in dieser Reihenfolge** (jeweils „Execute Workflow“): 01 → prüfen, ob Ideen im Sheet stehen → 02 → Entwurf kommt in Telegram → 03 aktivieren und auf „✅ Freigeben“ tippen → Post ist live → 05 und 06 aktivieren, mit Komently testen (Abschnitt 4) → 04 laufen lassen.
 8. Danach alle Workflows **aktivieren**.
 
 ## 3. Meta (Instagram & Facebook)
@@ -78,45 +83,35 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 - Limit: 50 API-Posts pro 24 h auf Instagram. Bilder müssen JPEG und öffentlich erreichbar sein (fal.ai liefert öffentliche URLs).
 - `graph_version` in der Konfiguration bei Bedarf auf die aktuelle Version setzen.
 
-## 4. ManyChat einrichten (einmalig)
+## 4. Komently einrichten (einmalig)
 
-Die Keywords sind **fest** (in der Konfiguration unter `keywords`). Claude wählt pro Post eines davon – dadurch musst du in ManyChat nichts mehr anfassen, wenn neue Posts kommen. Workflow 05 liefert automatisch den Gamma-Link des **neuesten** Posts mit diesem Keyword.
+Die Keywords sind **fest** (in der Konfiguration unter `keywords`). Claude wählt pro Post eines davon. Deshalb legst du in Komently **pro Keyword genau eine Automation** an und musst danach nichts mehr ändern, auch wenn neue Posts kommen:
 
-Pro Keyword (oder eine Automation mit allen Keywords):
+- Der Guide-Link in Komently ist für jedes Keyword immer derselbe: `https://<n8n-domain>/webhook/guide/CHECKLISTE`. Workflow 06 leitet ihn auf den **neuesten** veröffentlichten Gamma-Guide zu diesem Keyword weiter. Gibt es noch keinen, geht es auf `keyword_fallback_url` bzw. deine Website.
+- Jeder erfasste Lead geht per Webhook an Workflow 05.
 
-1. **Trigger**: *Instagram → Kommentar auf Post oder Reel* → „Jeder Post“ → Kommentar enthält `CHECKLISTE` (bzw. die anderen Keywords). Öffentliche Antwort aktivieren, z. B. „Schau in deine DMs 📩“.
-2. **DM senden**: „Hey {{first name}}, schön, dass du dabei bist! An welche E-Mail darf ich dir den Guide schicken?“ → *User Input* E-Mail → Systemfeld *Email*. Davor/darin eine kurze Einwilligung abfragen (Button „Ja, schick mir den Guide & Infos“) und als Custom Field `einwilligung` speichern.
-3. **Action → External Request**: `POST https://<deine-n8n-domain>/webhook/manychat-lead`
-   - Header: `X-Webhook-Token: <dein Geheimnis>`
-   - Body (JSON):
-     ```json
-     {
-       "subscriber_id": "{{user_id}}",
-       "first_name": "{{first_name}}",
-       "last_name": "{{last_name}}",
-       "email": "{{email}}",
-       "phone": "{{phone}}",
-       "ig_username": "{{ig_username}}",
-       "keyword": "CHECKLISTE",
-       "einwilligung": "{{einwilligung}}",
-       "kanal": "instagram"
-     }
-     ```
-     (`keyword` als festen Text pro Automation eintragen – das ist am zuverlässigsten.)
-   - **Response Mapping**: `$.leadmagnet_url` → Custom Field `leadmagnet_url`, `$.nachricht` → Custom Field `leadmagnet_text`.
-4. **DM senden**: `{{leadmagnet_text}}` + Button „Guide öffnen“ → URL `{{leadmagnet_url}}`.
-5. Optional: Tag „Lead – Baufi“ setzen, nach 2 Tagen Follow-up „Hat dir der Guide geholfen? Hier kannst du direkt einen Termin buchen …“.
+Pro Keyword (Beispiel CHECKLISTE):
 
-Dasselbe für Facebook-Kommentare (Messenger) mit `"kanal": "facebook"` wiederholen.
+1. Instagram-Konto (und Facebook-Seite) mit Komently verbinden.
+2. Neue **Comment-to-DM-Automation**: Trigger-Keyword `CHECKLISTE`, gilt für **alle aktuellen und künftigen Posts**. Name der Automation am besten mit dem Keyword beginnen („CHECKLISTE – Unterlagen-Guide“), dann erkennt n8n das Keyword auch aus dem Namen.
+3. Öffentliche Antwort auf den Kommentar, z. B. „Schau in deine DMs 📩“.
+4. DM mit **E-Mail-Abfrage** (Lead Capture): „Hey, an welche E-Mail darf ich dir den Guide schicken? Mit deiner Eingabe bist du einverstanden, dass wir dir den Guide und Infos zur Baufinanzierung senden. Abmeldung jederzeit möglich.“
+5. Freigeschaltete Ressource / Link: `https://<n8n-domain>/webhook/guide/CHECKLISTE`
+6. Unter Integrationen bzw. Webhook (*Custom Endpoint*) eintragen:
+   `https://<n8n-domain>/webhook/social-lead?token=<webhook_token>&keyword=CHECKLISTE&quelle=komently`
+   (`keyword=` in der URL ist eine Absicherung, falls Komently das Keyword nicht mitschickt.)
+7. Für die nächsten Keywords wiederholen (FOERDERUNG, EIGENKAPITAL, ANSCHLUSS, KAUFNEBENKOSTEN).
 
-> **„Kimberly“**: Ein Tool mit diesem Namen konnte ich nicht eindeutig zuordnen. Workflow 05 ist ein normaler Webhook – jedes Chat-Tool, das einen HTTP-Request mit JSON senden kann, lässt sich genauso anbinden.
+**Erster Test:** Mit einem Zweit-Account ein Keyword kommentieren und dann im Sheet `Leads` die Spalte `rohdaten` ansehen. Dort steht genau, was Komently geschickt hat. Workflow 05 sucht Name, E-Mail, Username und Keyword unter den üblichen Feldnamen. Fehlt etwas, ist das eine Anpassung im Node „Lead normalisieren“: mir einfach den Inhalt von `rohdaten` schicken.
+
+**ManyChat statt Komently?** Workflow 05 funktioniert auch damit: per *External Request* an dieselbe URL senden (Felder `first_name`, `last_name`, `email`, `ig_username`, `keyword`). Die Antwort enthält `leadmagnet_url` und `nachricht` zum Mappen in Custom Fields.
 
 ## 5. Ablauf im Alltag
 
 1. Montag früh kommt der **Wochenreport** (Kundenthemen, Mitbewerber, 6 neue Ideen) in Telegram.
 2. Mo/Mi/Fr um 7 Uhr kommt ein **Entwurf**: Bild/Video + Instagram- und Facebook-Text + Link zum Gamma-Leadmagneten.
 3. Du tippst **✅ Freigeben & posten** → der Post geht auf Instagram (Bild oder Reel) und Facebook raus. **🔁** erzeugt die Idee neu, **❌** verwirft.
-4. Jemand kommentiert das Keyword → ManyChat schickt die DM, fragt die E-Mail ab, n8n liefert den Guide-Link → du bekommst „🎯 Neuer Lead“ in Telegram.
+4. Jemand kommentiert das Keyword → Komently schickt die DM, fragt die E-Mail ab und sendet den Guide-Link (dieser führt immer zum neuesten passenden Gamma-Guide) → du bekommst „🎯 Neuer Lead“ in Telegram.
 5. Alle 3 Stunden: neue Kommentare mit **Antwortvorschlag**, Warnung bei Kritik, Hinweis auf Posts mit überdurchschnittlichem Engagement (Kandidat zum Boosten).
 
 Den Inhalt eines Entwurfs änderst du direkt im Sheet (`Posts` → `caption_instagram` / `text_facebook`), **bevor** du freigibst – Workflow 03 liest den Text erst beim Klick aus dem Sheet.
@@ -125,7 +120,7 @@ Den Inhalt eines Entwurfs änderst du direkt im Sheet (`Posts` → `caption_inst
 
 - Die Prompts verbieten konkrete Zinssätze/Raten. Sobald Zinsen beworben werden, sind Pflichtangaben mit repräsentativem Beispiel nach § 17 PAngV nötig – das lässt sich nicht sauber automatisieren.
 - Pflichtangaben nach § 34i GewO (Erlaubnis, Registernummer) gehören ins Profil/Impressum der Accounts und in den Gamma-Leadmagneten (z. B. als feste letzte Seite über ein Gamma-Theme/Template).
-- ManyChat, Google, fal.ai, Gamma, Anthropic verarbeiten Daten → in der Datenschutzerklärung nennen, AV-Verträge abschließen. Leads nur mit dokumentierter Einwilligung für Werbung nutzen (Spalte `einwilligung`).
+- Komently, Google, fal.ai, Gamma, Anthropic verarbeiten Daten → in der Datenschutzerklärung nennen, AV-Verträge abschließen. Leads nur mit dokumentierter Einwilligung für Werbung nutzen (Spalte `einwilligung`; Komently schickt dieses Feld evtl. nicht mit, dann steht dort „nein“ und der Einwilligungstext aus der DM ist dein Nachweis).
 - KI-generierte Bilder/Videos: Meta kennzeichnet sie ggf. automatisch als „Mit KI erstellt“.
 
 ## 7. Anpassen & Erweitern

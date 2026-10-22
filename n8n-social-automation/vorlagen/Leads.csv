@@ -1,1 +1,1 @@
-datum,subscriber_id,vorname,nachname,email,telefon,ig_username,kanal,keyword,post_id,leadmagnet_url,einwilligung,status
+datum,quelle,subscriber_id,vorname,nachname,email,telefon,ig_username,kanal,keyword,post_id,leadmagnet_url,einwilligung,status,rohdaten
