@@ -4,10 +4,10 @@ n8n muss **rund um die Uhr laufen und per HTTPS aus dem Internet erreichbar sein
 
 ## Welche Variante?
 
-| | **A) n8n Cloud** | **B) Eigener Server (empfohlen bei Bastel-Lust)** |
+| | **A) n8n Cloud** | **B) IONOS VPS** |
 |---|---|---|
 | Aufwand | 5 Minuten, keine Wartung | ca. 30–45 Minuten, Updates selbst einspielen |
-| Kosten | Abo ab ca. 20–25 €/Monat (Starter, begrenzte Ausführungen) | Server ca. 4–8 €/Monat (z. B. Hetzner, Standort Deutschland) |
+| Kosten | Abo ab ca. 20–25 €/Monat (Starter, begrenzte Ausführungen) | VPS je nach Größe ca. 5–10 €/Monat, Rechenzentrum Deutschland |
 | Daten | Hosting in der EU (Frankfurt) | komplett bei dir, Server in DE |
 | Grenzen | Ausführungen pro Monat je nach Tarif | keine |
 
@@ -27,72 +27,71 @@ Die Webhook-Adressen lauten dann z. B. `https://<name>.app.n8n.cloud/webhook/soc
 
 ---
 
-## B) Eigener Server mit Docker (Hetzner, Ubuntu)
+## B) IONOS VPS (gewählt)
 
-### 1. Server und Subdomain
+### 1. VPS bestellen
 
-1. Bei [Hetzner Cloud](https://www.hetzner.com/cloud) einen kleinen Server anlegen: Standort Nürnberg oder Falkenstein, Image **Ubuntu 24.04**, 2 vCPU / 4 GB RAM. SSH-Key hinterlegen.
-2. Bei **IONOS** (deine Domain) unter *Domains & SSL → DNS* einen **A-Record** anlegen:
-   `n8n` → IP-Adresse des Servers. Ergebnis: `n8n.deine-domain.de`.
-   Ein paar Minuten warten, bis `ping n8n.deine-domain.de` die Server-IP zeigt.
+1. Bei IONOS einen **VPS Linux** bestellen: mindestens **2 vCPU / 4 GB RAM** (mit 2 GB läuft es auch, dann wird es aber knapp, das Skript legt dafür zusätzlich Swap an). Rechenzentrum Deutschland.
+2. Als Betriebssystem **Ubuntu 24.04** wählen, **ohne Plesk**.
+3. Im **Cloud Panel** unter *Server & Cloud → dein Server* findest du die **IP-Adresse** und das **Root-Passwort** (Zugangsdaten).
+4. Unter *Netzwerk → Firewall-Richtlinien* die Richtlinie des Servers öffnen und sicherstellen, dass **TCP 22, 80 und 443** eingehend erlaubt sind. Bei IONOS ist das eine eigene Firewall vor dem Server; sind 80/443 dort zu, klappt das HTTPS-Zertifikat nicht.
 
-### 2. Docker installieren
+### 2. Subdomain anlegen (ebenfalls IONOS)
 
-Per SSH auf den Server (`ssh root@<SERVER-IP>`) und dann:
+*Domains & SSL → deine Domain → DNS → Record hinzufügen*:
 
-```bash
-apt update && apt upgrade -y
-curl -fsSL https://get.docker.com | sh
-ufw allow OpenSSH && ufw allow 80 && ufw allow 443 && ufw --force enable
-```
+| Typ | Hostname | Zeigt auf |
+|---|---|---|
+| A | `n8n` | IP-Adresse des VPS |
 
-### 3. n8n einrichten
+Ergebnis: `n8n.deine-domain.de`. Das dauert meist nur wenige Minuten, kann aber bis zu einer Stunde brauchen. Prüfen kannst du es mit `ping n8n.deine-domain.de`: Dort muss die VPS-IP erscheinen.
 
-Die Dateien aus diesem Ordner (`docker-compose.yml`, `Caddyfile`, `.env.example`, `backup.sh`) nach `/opt/n8n` auf den Server kopieren, z. B. vom eigenen Rechner aus:
+> Steht bei der Subdomain schon ein AAAA-Record (IPv6) auf einen IONOS-Webspace, diesen löschen.
 
-```bash
-scp docker-compose.yml Caddyfile .env.example backup.sh root@<SERVER-IP>:/opt/n8n/
-```
+### 3. Dateien auf den Server bringen
 
-(Vorher auf dem Server `mkdir -p /opt/n8n`.) Dann auf dem Server:
+Den Ordner `n8n-social-automation/installation` aus diesem Repository auf den Server nach `/opt/n8n` kopieren:
+
+- **Windows:** [WinSCP](https://winscp.net) öffnen: Protokoll SFTP, Host = VPS-IP, Benutzer `root`, Root-Passwort. Ordner `/opt/n8n` anlegen und die Dateien `docker-compose.yml`, `Caddyfile`, `install.sh`, `backup.sh`, `.env.example` hineinziehen.
+- **Mac/Linux:** `ssh root@<VPS-IP> mkdir -p /opt/n8n`, dann `scp docker-compose.yml Caddyfile install.sh backup.sh .env.example root@<VPS-IP>:/opt/n8n/`
+
+### 4. Installation (ein Befehl)
+
+Per SSH verbinden. Unter Windows geht das mit PowerShell (`ssh root@<VPS-IP>`) oder mit der Konsole im IONOS Cloud Panel. Dann:
 
 ```bash
 cd /opt/n8n
-cp .env.example .env
-echo "POSTGRES_PASSWORD=$(openssl rand -hex 32)"   # Wert in .env eintragen
-echo "N8N_ENCRYPTION_KEY=$(openssl rand -hex 32)"  # Wert in .env eintragen UND sicher notieren
-nano .env                                          # N8N_DOMAIN + die beiden Werte eintragen
-docker compose up -d
-docker compose logs -f n8n                         # warten bis "Editor is now accessible", dann Strg+C
+chmod +x install.sh
+./install.sh n8n.deine-domain.de
 ```
 
-Jetzt `https://n8n.deine-domain.de` öffnen. Das HTTPS-Zertifikat holt Caddy automatisch. Beim ersten Aufruf legst du den **Owner-Account** an (E-Mail und ein starkes Passwort). Danach unter *Settings → Personal* die Zwei-Faktor-Anmeldung einschalten.
+Das Skript prüft den DNS-Eintrag, aktualisiert das System, installiert Docker, richtet Firewall und Swap ein, erzeugt sichere Passwörter in `.env`, startet n8n, Datenbank und HTTPS und plant das tägliche Backup ein. Am Ende zeigt es den **N8N_ENCRYPTION_KEY**: diesen sicher notieren.
 
-### 4. Backups & Updates
+Danach `https://n8n.deine-domain.de` öffnen und den **Owner-Account** anlegen (E-Mail und ein starkes Passwort). Anschließend unter *Settings → Personal* die Zwei-Faktor-Anmeldung einschalten.
 
-```bash
-chmod +x /opt/n8n/backup.sh
-(crontab -l 2>/dev/null; echo "0 3 * * * /opt/n8n/backup.sh") | crontab -
-```
+### 5. Absichern (empfohlen)
 
-Zusätzlich in der Hetzner-Konsole die **Server-Backups** einschalten (ca. 20 % Aufpreis). Für Updates etwa monatlich:
+- Root-Passwort im Cloud Panel ändern bzw. einen SSH-Key hinterlegen und danach in `/etc/ssh/sshd_config` `PasswordAuthentication no` setzen.
+- Im IONOS Cloud Panel **Snapshots/Backups** des Servers aktivieren (zusätzlich zum täglichen Datenbank-Backup in `/opt/n8n/backups`).
+
+### 6. Updates (etwa monatlich)
 
 ```bash
 cd /opt/n8n && docker compose pull && docker compose up -d
 ```
 
-### 5. Weiter
+### 7. Weiter
 
 Weiter mit der `README.md`, Abschnitt 2 (Workflows importieren). Deine Webhook-Adressen:
 
-- Lead-Webhook (Komently): `https://n8n.deine-domain.de/webhook/social-lead?token=<webhook_token>`
+- Lead-Webhook (Komently): `https://n8n.deine-domain.de/webhook/social-lead?token=<webhook_token>&keyword=CHECKLISTE&quelle=komently`
 - Guide-Links: `https://n8n.deine-domain.de/webhook/guide/CHECKLISTE` (usw. je Keyword)
 
 ## Häufige Probleme
 
 | Problem | Lösung |
 |---|---|
-| Seite lädt nicht, kein Zertifikat | DNS-A-Record prüfen; Ports 80/443 offen? `docker compose logs caddy` |
+| Seite lädt nicht, kein Zertifikat | DNS-A-Record prüfen; Ports 80/443 in der **IONOS-Firewall-Richtlinie** offen? `docker compose logs caddy` |
 | Telegram-Buttons tun nichts | Workflow 03 muss **aktiv** sein; `WEBHOOK_URL` in der Compose-Datei muss mit `https://` und deiner Domain stimmen |
 | „Credentials could not be decrypted“ nach Umzug | Es wurde ein anderer `N8N_ENCRYPTION_KEY` verwendet – den alten Schlüssel wieder eintragen |
 | Zeitpläne laufen zur falschen Uhrzeit | `GENERIC_TIMEZONE` prüfen und in den Workflow-Settings Europe/Berlin wählen |
