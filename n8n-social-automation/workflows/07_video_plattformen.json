@@ -1,0 +1,1103 @@
+{
+  "name": "07 Video-Plattformen – TikTok & YouTube Shorts",
+  "nodes": [
+    {
+      "id": "0d806df5-9c47-5116-9660-070295bb52cc",
+      "name": "Start (von Workflow 03)",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "2f1708b8-f3cb-5686-bec9-a4edcaec5cd3",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // Sekunden ('5' oder '10'); für TikTok/Shorts eher 10\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "9637124c-c31e-53ed-8555-478f35696726",
+      "name": "Sheet: Post laden",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "post_id",
+              "lookupValue": "={{ $('Start (von Workflow 03)').first().json.post_id }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "9a7423b1-e396-5031-8545-308deb934eef",
+      "name": "Post prüfen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const p = $input.first().json;\nif (!p || p.format !== 'video' || !p.media_url) throw new Error('Kein Video-Post: ' + JSON.stringify(p).slice(0, 200));\nreturn [{ json: p }];\n"
+      }
+    },
+    {
+      "id": "4e0e4945-dddd-5657-b06b-a2f6b925437c",
+      "name": "Video herunterladen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.media_url }}",
+        "options": {
+          "timeout": 300000,
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "64babfc4-0eba-5d35-b600-977e6d9ed2e2",
+      "name": "Videogröße",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const buf = await this.helpers.getBinaryDataBuffer(0, 'data');\nif (buf.length > 64 * 1024 * 1024) throw new Error('Video größer als 64 MB – bitte kürzer/kleiner erzeugen.');\nreturn [{ json: { ...$('Post prüfen').first().json, video_size: buf.length }, binary: $input.first().binary }];\n"
+      }
+    },
+    {
+      "id": "a2203540-20cb-5f97-b6f9-71766f5561a6",
+      "name": "YouTube aktiv?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "e3ed0b48-4318-4790-b5d6-dcdd8f48166b",
+              "leftValue": "={{ $('Konfiguration').first().json.youtube_aktiv }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "82aeb95c-4664-51b2-82d1-ffbef5fd0b1c",
+      "name": "YouTube: Short hochladen",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        100
+      ],
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $json.youtube_titel }}",
+        "regionCode": "DE",
+        "categoryId": "={{ $('Konfiguration').first().json.youtube_kategorie }}",
+        "binaryProperty": "data",
+        "options": {
+          "description": "={{ $json.youtube_beschreibung }}",
+          "privacyStatus": "={{ $('Konfiguration').first().json.youtube_privacy }}",
+          "selfDeclaredMadeForKids": false,
+          "notifySubscribers": true,
+          "defaultLanguage": "de"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "48b300f6-9a73-5346-b2f3-ef4f5d1abc2c",
+      "name": "YouTube: KI-Kennzeichnung setzen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        100
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "https://www.googleapis.com/youtube/v3/videos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "status"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ id: $json.id, status: { privacyStatus: $('Konfiguration').first().json.youtube_privacy, selfDeclaredMadeForKids: false, containsSyntheticMedia: true } }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Markiert das Video als KI-generiert (status.containsSyntheticMedia)."
+    },
+    {
+      "id": "c06d0ad9-b12d-5df9-975b-9ceace5ea087",
+      "name": "YouTube-Ergebnis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        100
+      ],
+      "parameters": {
+        "jsCode": "const y = $('YouTube: Short hochladen').first().json;\nconst id = y.id || '';\nreturn [{ json: { post_id: $('Videogröße').first().json.post_id, youtube_video_id: id,\n  meldung: id ? `▶️ YouTube Short hochgeladen: https://youtube.com/shorts/${id}` : `⚠️ YouTube-Upload fehlgeschlagen: ${JSON.stringify(y.error || y).slice(0, 300)}` } }];\n"
+      }
+    },
+    {
+      "id": "32b3af89-e529-52e6-98c6-aebb0491227b",
+      "name": "YouTube: Sheet-Zeile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        100
+      ],
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nreturn [{ json: { post_id: r.post_id, youtube_video_id: r.youtube_video_id } }];\n"
+      }
+    },
+    {
+      "id": "d3e023b8-b36b-5073-b57f-548d42512889",
+      "name": "Sheet: YouTube-ID speichern",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2420,
+        100
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d9606fb1-0b7d-5469-85a1-40f235e92e74",
+      "name": "Telegram: YouTube",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        100
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "={{ $('YouTube-Ergebnis').first().json.meldung }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      }
+    },
+    {
+      "id": "e474495d-e177-533b-a11e-e55ee9896826",
+      "name": "TikTok aktiv?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        500
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "a2301ac7-699e-4d2e-936a-46f26c154436",
+              "leftValue": "={{ $('Konfiguration').first().json.tiktok_aktiv }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "42b39fb9-dd99-50d9-b67b-5e6c2f17ea73",
+      "name": "TikTok: Token lesen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1540,
+        500
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tokens",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "plattform",
+              "lookupValue": "tiktok"
+            }
+          ]
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "51782a01-b7ed-5406-8ffc-49119700058e",
+      "name": "TikTok: Token erneuern",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        500
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/oauth/token/",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_key",
+              "value": "={{ $('Konfiguration').first().json.tiktok_client_key }}"
+            },
+            {
+              "name": "client_secret",
+              "value": "={{ $('Konfiguration').first().json.tiktok_client_secret }}"
+            },
+            {
+              "name": "grant_type",
+              "value": "refresh_token"
+            },
+            {
+              "name": "refresh_token",
+              "value": "={{ $json.refresh_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "077b4037-982e-5f99-b540-6821980b5238",
+      "name": "TikTok: Token-Daten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        500
+      ],
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nconst STRICT = true;\nif (!r.access_token) {\n  if (STRICT) throw new Error('TikTok-Token konnte nicht erneuert werden – Workflow 08 (TikTok verbinden) erneut ausführen. ' + JSON.stringify(r).slice(0, 300));\n  return [{ json: { ok: false, access_token: '' } }];\n}\nreturn [{ json: { ok: true, plattform: 'tiktok', access_token: r.access_token, refresh_token: r.refresh_token,\n  open_id: r.open_id || '', scope: r.scope || '', aktualisiert_am: new Date().toISOString() } }];\n"
+      }
+    },
+    {
+      "id": "a7caa117-43aa-574f-8107-4223fcdc28d5",
+      "name": "TikTok: Token ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        660
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "30db0017-b38f-42d1-8b56-f67309519b13",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a9e81398-5c96-59fb-972e-847de8ea0abc",
+      "name": "TikTok: Token-Zeile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        660
+      ],
+      "parameters": {
+        "jsCode": "const t = $input.first().json;\nreturn [{ json: { plattform: t.plattform, access_token: t.access_token, refresh_token: t.refresh_token, open_id: t.open_id, scope: t.scope, aktualisiert_am: t.aktualisiert_am } }];\n"
+      }
+    },
+    {
+      "id": "735c8d3f-ce95-5ebd-8335-01e3626f990f",
+      "name": "Sheet: TikTok-Token speichern",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2640,
+        660
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tokens",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "plattform"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "32233ede-419e-5463-94df-05e6f051c7b3",
+      "name": "TikTok: Creator-Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        500
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/creator_info/query/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('TikTok: Token-Daten').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "3ab913ee-ab2a-5e04-b356-11ba04e1a519",
+      "name": "TikTok: Upload vorbereiten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        500
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst p = $('Videogröße').first().json;\nconst ci = $input.first().json.data || {};\nconst size = p.video_size;\nconst source_info = { source: 'FILE_UPLOAD', video_size: size, chunk_size: size, total_chunk_count: 1 };\nlet url, body;\nif (c.tiktok_modus === 'direkt') {\n  const opts = ci.privacy_level_options || [];\n  const privacy = opts.includes('PUBLIC_TO_EVERYONE') ? 'PUBLIC_TO_EVERYONE' : (opts.includes('SELF_ONLY') ? 'SELF_ONLY' : opts[0]);\n  if (!privacy) throw new Error('TikTok Creator-Info ohne privacy_level_options: ' + JSON.stringify($input.first().json).slice(0, 300));\n  url = 'https://open.tiktokapis.com/v2/post/publish/video/init/';\n  body = { post_info: { title: String(p.text_tiktok || '').slice(0, 2200), privacy_level: privacy,\n    disable_comment: false, disable_duet: false, disable_stitch: false }, source_info };\n} else {\n  url = 'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/';\n  body = { source_info };\n}\nreturn [{ json: { init_url: url, init_body: body, video_size: size } }];\n"
+      }
+    },
+    {
+      "id": "de43e199-c65d-5fa1-94f1-d230484e6ef7",
+      "name": "TikTok: Upload starten",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        500
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.init_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('TikTok: Token-Daten').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.init_body) }}",
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "e0df467a-10ac-5307-86af-3dfd223b3efe",
+      "name": "TikTok: Video anhängen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        500
+      ],
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nif (!r.data?.upload_url) throw new Error('TikTok init fehlgeschlagen: ' + JSON.stringify(r.error || r).slice(0, 300));\nconst size = $('TikTok: Upload vorbereiten').first().json.video_size;\nreturn [{ json: { publish_id: r.data.publish_id, upload_url: r.data.upload_url, range: `bytes 0-${size - 1}/${size}` },\n  binary: $('Videogröße').first().binary }];\n"
+      }
+    },
+    {
+      "id": "be8187d4-9dfa-5227-9fc0-751aa2f271f1",
+      "name": "TikTok: Video hochladen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3080,
+        500
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.upload_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "video/mp4"
+            },
+            {
+              "name": "Content-Range",
+              "value": "={{ $json.range }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 300000
+        }
+      }
+    },
+    {
+      "id": "6c454d1a-aa48-52db-a650-6a4262358a98",
+      "name": "TikTok: 20 s warten",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3300,
+        500
+      ],
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "webhookId": "ff6973f3-18c6-57ee-8583-3ae6ef8e8212"
+    },
+    {
+      "id": "341da46a-047f-5425-b412-785862a7c239",
+      "name": "TikTok: Status abfragen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3520,
+        500
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/status/fetch/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('TikTok: Token-Daten').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ publish_id: $('TikTok: Video anhängen').first().json.publish_id }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "raw"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "29ffed63-3e18-59e3-a6e0-0c99fd353bb2",
+      "name": "TikTok: Status auswerten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        500
+      ],
+      "parameters": {
+        "jsCode": "// Antwort als Text lesen: TikTok-Video-IDs sind 19-stellig und würden als Zahl gerundet\nconst raw = String($input.first().json.raw || '');\nconst d = JSON.parse(raw).data || {};\nconst idMatch = raw.match(/\"publicaly_available_post_id\"\\s*:\\s*\\[\\s*\"?(\\d+)/);\nd.publicaly_available_post_id = idMatch ? [idMatch[1]] : [];\nif (d.status === 'FAILED') throw new Error('TikTok-Upload fehlgeschlagen: ' + (d.fail_reason || JSON.stringify(d)));\nif ($runIndex > 30) throw new Error('TikTok-Verarbeitung dauert zu lange (Status: ' + d.status + ')');\nconst fertig = ['PUBLISH_COMPLETE', 'SEND_TO_USER_INBOX'].includes(d.status);\nreturn [{ json: { fertig, status: d.status, video_id: (d.publicaly_available_post_id || [])[0] || '' } }];\n"
+      }
+    },
+    {
+      "id": "ed3d207e-dd7f-51ff-9b98-f2347fae5b0a",
+      "name": "TikTok fertig?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        500
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "dc63753a-8f90-4c66-878b-0fe0a233ec59",
+              "leftValue": "={{ $json.fertig }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "030b83c4-3307-5b25-a869-783afa46c526",
+      "name": "TikTok: Sheet-Zeile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4180,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const s = $input.first().json;\nreturn [{ json: { post_id: $('Videogröße').first().json.post_id, tiktok_publish_id: $('TikTok: Video anhängen').first().json.publish_id,\n  tiktok_video_id: s.video_id ? 'tt:' + s.video_id : '', tiktok_status: s.status } }];\n"
+      }
+    },
+    {
+      "id": "0ddef39e-3b06-5dc0-95ef-447f41c193c5",
+      "name": "Sheet: TikTok-Status speichern",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4400,
+        400
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "11bb937f-12ec-5820-9e77-c55688a94aca",
+      "name": "Telegram: TikTok",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4620,
+        400
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "={{ $('TikTok: Sheet-Zeile').first().json.tiktok_status === 'SEND_TO_USER_INBOX' ? '📱 <b>TikTok-Entwurf bereit</b> (' + $('TikTok: Sheet-Zeile').first().json.post_id + ')\\nÖffne TikTok → Benachrichtigungen/Posteingang → Entwurf bearbeiten: Sound wählen, „KI-generierte Inhalte“ einschalten, Caption einfügen:\\n\\n' + $('Videogröße').first().json.text_tiktok : '✅ <b>TikTok veröffentlicht</b> (' + $('TikTok: Sheet-Zeile').first().json.post_id + ')' + ($('TikTok: Sheet-Zeile').first().json.tiktok_video_id ? '' : '\\nHinweis: Solange die TikTok-App nicht geprüft ist, ist das Video nur für dich sichtbar.') }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start (von Workflow 03)": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Post laden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Post laden": {
+      "main": [
+        [
+          {
+            "node": "Post prüfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post prüfen": {
+      "main": [
+        [
+          {
+            "node": "Video herunterladen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video herunterladen": {
+      "main": [
+        [
+          {
+            "node": "Videogröße",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Videogröße": {
+      "main": [
+        [
+          {
+            "node": "YouTube aktiv?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TikTok aktiv?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube aktiv?": {
+      "main": [
+        [
+          {
+            "node": "YouTube: Short hochladen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube: Short hochladen": {
+      "main": [
+        [
+          {
+            "node": "YouTube: KI-Kennzeichnung setzen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube: KI-Kennzeichnung setzen": {
+      "main": [
+        [
+          {
+            "node": "YouTube-Ergebnis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube-Ergebnis": {
+      "main": [
+        [
+          {
+            "node": "YouTube: Sheet-Zeile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube: Sheet-Zeile": {
+      "main": [
+        [
+          {
+            "node": "Sheet: YouTube-ID speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: YouTube-ID speichern": {
+      "main": [
+        [
+          {
+            "node": "Telegram: YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Token lesen": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Token erneuern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Token erneuern": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Token-Daten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Token-Daten": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Token ok?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TikTok: Creator-Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Token ok?": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Token-Zeile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Token-Zeile": {
+      "main": [
+        [
+          {
+            "node": "Sheet: TikTok-Token speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok aktiv?": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Token lesen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Creator-Info": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Upload vorbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Upload vorbereiten": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Upload starten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Upload starten": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Video anhängen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Video anhängen": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Video hochladen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Video hochladen": {
+      "main": [
+        [
+          {
+            "node": "TikTok: 20 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: 20 s warten": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Status abfragen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Status abfragen": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Status auswerten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Status auswerten": {
+      "main": [
+        [
+          {
+            "node": "TikTok fertig?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok fertig?": {
+      "main": [
+        [
+          {
+            "node": "TikTok: Sheet-Zeile",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TikTok: 20 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok: Sheet-Zeile": {
+      "main": [
+        [
+          {
+            "node": "Sheet: TikTok-Status speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: TikTok-Status speichern": {
+      "main": [
+        [
+          {
+            "node": "Telegram: TikTok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin"
+  },
+  "pinData": {},
+  "active": false
+}

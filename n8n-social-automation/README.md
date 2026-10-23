@@ -28,6 +28,9 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 | `workflows/04_monitoring.json` | Reichweite/Likes/Saves/Shares, neue Kommentare, Top-Posts | alle 3 Std. 8–20 Uhr |
 | `workflows/05_lead_webhook.json` | Speichert Leads aus Komently (oder ManyChat), Telegram-Meldung | Webhook von Komently |
 | `workflows/06_guide_link.json` | Fester Link je Keyword, leitet auf den neuesten Gamma-Guide weiter | Klick auf den Guide-Link |
+| `workflows/07_video_plattformen.json` | Video-Posts zusätzlich auf TikTok und als YouTube Short | wird von 03 gestartet |
+| `workflows/08_tiktok_verbinden.json` | Einmaliger TikTok-Login (holt den Zugangs-Token) | Aufruf im Browser |
+| `workflows/09_video_monitoring.json` | Views/Likes von TikTok und YouTube, Video-Report | täglich 19:30 |
 | `vorlagen/*.csv` | Spaltenköpfe für das Google Sheet (4 Tabs) | – |
 | `installation/` | n8n installieren: Anleitung, Docker-Compose, Backup-Skript | – |
 
@@ -52,7 +55,7 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 
 ## 2. Einrichtung Schritt für Schritt
 
-1. **Google Sheet anlegen** mit den Tabs `Recherche`, `Ideen`, `Posts`, `Leads`. Erste Zeile jedes Tabs = Inhalt der jeweiligen CSV aus `vorlagen/`. Die Sheet-ID steht in der URL (`/spreadsheets/d/<ID>/edit`).
+1. **Google Sheet anlegen** mit den Tabs `Recherche`, `Ideen`, `Posts`, `Leads`, `Tokens`. Erste Zeile jedes Tabs = Inhalt der jeweiligen CSV aus `vorlagen/`. Die Sheet-ID steht in der URL (`/spreadsheets/d/<ID>/edit`).
 2. **Telegram-Bot**: Bei @BotFather `/newbot`, Token kopieren. Dem Bot eine Nachricht schicken und die Chat-ID z. B. über `https://api.telegram.org/bot<TOKEN>/getUpdates` auslesen.
 3. **Workflows importieren**: In n8n → *Workflows → Import from File* – alle sechs JSON-Dateien.
 4. **Credentials in n8n anlegen** und in den rot markierten Nodes auswählen:
@@ -67,6 +70,7 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
    | Query Auth | Meta Page Token | Name `access_token`, Wert = langlebiger **Page Access Token** |
    | Telegram API | Telegram Bot | Bot-Token |
    | Google Sheets OAuth2 | Google Sheets | Google-Login |
+   | YouTube OAuth2 API | YouTube | Google-Login des YouTube-Kanals (nur bei YouTube, siehe Abschnitt 4b) |
 
 5. **Konfiguration ausfüllen**: Jeder Workflow beginnt mit dem Code-Node **„Konfiguration“** – dort Firma, Region, Zielgruppe, Ansprache (du/Sie), Termin-Link, Mitbewerber, Sheet-ID, Telegram-Chat-ID, Instagram-/Facebook-IDs und `webhook_token` (Zufallswert, z. B. `openssl rand -hex 24`) eintragen. Am einfachsten einmal ausfüllen und den Node in alle Workflows kopieren.
 6. **Fehler-Workflow verknüpfen**: In Workflow 01–05 unter *Settings → Error Workflow* „00 Fehler-Alarm“ wählen.
@@ -106,6 +110,51 @@ Pro Keyword (Beispiel CHECKLISTE):
 
 **ManyChat statt Komently?** Workflow 05 funktioniert auch damit: per *External Request* an dieselbe URL senden (Felder `first_name`, `last_name`, `email`, `ig_username`, `keyword`). Die Antwort enthält `leadmagnet_url` und `nachricht` zum Mappen in Custom Fields.
 
+## 4b. TikTok & YouTube Shorts (optional)
+
+Nur **Video-Posts** gehen zusätzlich auf TikTok und YouTube. Bild-Posts bleiben auf Instagram und Facebook. Nach dem ✅ in Telegram postet Workflow 03 wie gewohnt auf Instagram und Facebook und startet dann Workflow 07. Claude schreibt für jede Plattform einen eigenen Text: eine kurze TikTok-Caption mit „Link in Bio“ und für YouTube Titel und Beschreibung. In die YouTube-Beschreibung wird automatisch der klickbare Guide-Link (`/webhook/guide/KEYWORD`) und dein Termin-Link eingefügt.
+
+Komently deckt nur Instagram und Facebook ab. Auf TikTok und YouTube läuft der Leadmagnet deshalb über den Link: auf YouTube direkt in der Beschreibung, auf TikTok über den Link in deiner Bio.
+
+### Wichtig vorab: beide Plattformen prüfen neue Apps
+
+| | Ohne Prüfung (Audit) | Nach Prüfung |
+|---|---|---|
+| **YouTube** | Hochgeladene Videos bleiben **privat** | öffentlich |
+| **TikTok direkt posten** | nur „Nur ich“ sichtbar; dein Konto muss beim Posten auf privat stehen | öffentlich |
+| **TikTok Entwurf** (Standard hier) | Video landet als Entwurf in deiner TikTok-Inbox, du veröffentlichst in der App | – |
+
+Ich empfehle für TikTok den Modus **`entwurf`**. Du wählst in der App noch einen Trend-Sound und setzt die Kennzeichnung „KI-generierte Inhalte“, beides bringt auf TikTok viel. Für YouTube das Audit beantragen (kostenlos, Formular „YouTube API Services – Audit and Quota Extension“). Bis es durch ist, kannst du die Shorts in YouTube Studio mit einem Klick auf „Öffentlich“ stellen.
+
+### YouTube einrichten
+
+1. In der [Google Cloud Console](https://console.cloud.google.com) (gleiches Projekt wie für Google Sheets) die **YouTube Data API v3** aktivieren.
+2. Im OAuth-Zustimmungsbildschirm deinen Google-Account als Testnutzer eintragen bzw. die App veröffentlichen.
+3. In n8n ein Credential **YouTube OAuth2 API** anlegen (Client-ID/Secret aus dem Projekt; die Redirect-URL zeigt n8n an und muss im Google-Projekt eingetragen werden). Mit dem Google-Konto anmelden, dem der Kanal gehört.
+4. Das Credential in Workflow 07 („YouTube: Short hochladen“, „YouTube: KI-Kennzeichnung setzen“) und 09 („YouTube: Statistiken“) auswählen.
+5. In der Konfiguration `youtube_aktiv: true` setzen.
+
+Kontingent: Ein Upload verbraucht 1.600 der 10.000 täglichen API-Einheiten. Das reicht für etwa 6 Uploads pro Tag.
+
+### TikTok einrichten
+
+1. Auf [developers.tiktok.com](https://developers.tiktok.com) eine App anlegen. Produkte: **Login Kit** und **Content Posting API**. Scopes: `user.info.basic`, `video.upload`, `video.publish`, `video.list`.
+2. Als Redirect-URI eintragen: `https://n8n.deine-domain.de/webhook/tiktok-callback`.
+3. **Client Key** und **Client Secret** in die Konfiguration aller Workflows eintragen (`tiktok_client_key`, `tiktok_client_secret`) und `n8n_url` setzen.
+4. Workflow **08 aktivieren**, dann im Browser `https://n8n.deine-domain.de/webhook/tiktok-callback` öffnen. Du wirst zu TikTok geleitet, meldest dich an und bestätigst. Danach steht im Sheet-Tab `Tokens` eine Zeile `tiktok`. Der Token wird bei jeder Nutzung automatisch erneuert. Wenn er doch einmal abläuft (nach ca. 1 Jahr ohne Nutzung), Schritt 4 einfach wiederholen.
+5. `tiktok_aktiv: true` setzen. `tiktok_modus` bleibt `'entwurf'`, bis deine TikTok-App geprüft ist.
+
+### Workflow 03 mit 07 verbinden
+
+Nach dem Import im Node **„Workflow 07 starten“** (Workflow 03) den Workflow „07 Video-Plattformen“ auswählen.
+
+### Videos für TikTok/Shorts
+
+Die erzeugten Clips sind B-Roll ohne Ton (`video_dauer: '10'`, maximal 10 s). Das funktioniert mit Text-Overlay und Trend-Sound, persönliche Videos laufen auf TikTok und YouTube aber meist deutlich besser. Zwei Wege dahin:
+
+- **Eigene Clips:** Video selbst aufnehmen, in Google Drive/Dropbox legen und die öffentliche URL in die Spalte `media_url` eintragen, bevor du freigibst.
+- **Avatar-Video** mit HeyGen (dein digitaler Zwilling spricht den Text). Das kann ich als Alternative zu fal.ai einbauen.
+
 ## 5. Ablauf im Alltag
 
 1. Montag früh kommt der **Wochenreport** (Kundenthemen, Mitbewerber, 6 neue Ideen) in Telegram.
@@ -113,6 +162,7 @@ Pro Keyword (Beispiel CHECKLISTE):
 3. Du tippst **✅ Freigeben & posten** → der Post geht auf Instagram (Bild oder Reel) und Facebook raus. **🔁** erzeugt die Idee neu, **❌** verwirft.
 4. Jemand kommentiert das Keyword → Komently schickt die DM, fragt die E-Mail ab und sendet den Guide-Link (dieser führt immer zum neuesten passenden Gamma-Guide) → du bekommst „🎯 Neuer Lead“ in Telegram.
 5. Alle 3 Stunden: neue Kommentare mit **Antwortvorschlag**, Warnung bei Kritik, Hinweis auf Posts mit überdurchschnittlichem Engagement (Kandidat zum Boosten).
+6. Video-Posts (wenn aktiviert): TikTok-Entwurf liegt in deiner TikTok-Inbox, Telegram sagt dir Bescheid; der YouTube Short ist hochgeladen. Täglich um 19:30 kommt der Video-Report mit Views und Likes.
 
 Den Inhalt eines Entwurfs änderst du direkt im Sheet (`Posts` → `caption_instagram` / `text_facebook`), **bevor** du freigibst – Workflow 03 liest den Text erst beim Klick aus dem Sheet.
 
@@ -132,6 +182,9 @@ Den Inhalt eines Entwurfs änderst du direkt im Sheet (`Posts` → `caption_inst
 - **Gamma-Branding**: `gamma_theme_id` in der Konfiguration setzen (Theme-ID aus Gamma).
 
 ## 8. Bekannte Stellen zum Prüfen nach dem Import
+
+- TikTok: Die Upload-Abläufe entsprechen der Content Posting API (Datei-Upload in einem Stück, max. 64 MB). Beim ersten Lauf in der Ausführung von Workflow 07 prüfen, ob „TikTok: Upload starten“ ein `upload_url` liefert.
+- YouTube: Das Feld `containsSyntheticMedia` (KI-Kennzeichnung) wird per Update gesetzt. Schlägt das fehl, läuft der Upload trotzdem durch; die Kennzeichnung dann in YouTube Studio setzen.
 
 Die Workflows wurden für n8n 1.x gebaut, aber nicht in einer laufenden n8n-Instanz getestet. Nach dem Import kurz prüfen:
 

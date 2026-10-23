@@ -28,7 +28,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // Sekunden ('5' oder '10'); für TikTok/Shorts eher 10\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
       }
     },
     {
@@ -126,7 +126,7 @@
           },
           "conditions": [
             {
-              "id": "515d1820-b5da-4cff-9f8e-b84238bfb467",
+              "id": "8b11d97c-7c9d-44f5-b5e8-8065798e9f8f",
               "leftValue": "={{ $json.offen }}",
               "rightValue": "",
               "operator": {
@@ -182,7 +182,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "90cc1cd1-f740-4c39-90e1-e56a4d1ad090",
+                    "id": "aa354012-0127-4d4f-a566-e21ac81e46b6",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "ok",
                     "operator": {
@@ -206,7 +206,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "affe422e-bba4-441c-ae6e-6ccb99e215ad",
+                    "id": "a88affc0-2840-4940-a78b-6aef95722e93",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "neu",
                     "operator": {
@@ -230,7 +230,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "eaf03684-8336-4993-b927-ffca7d582860",
+                    "id": "32702eb9-98d6-4ed4-97bc-3779d167dbc3",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "nein",
                     "operator": {
@@ -463,7 +463,7 @@
           },
           "conditions": [
             {
-              "id": "790d03c7-1057-492c-a73f-8759710c358c",
+              "id": "c7054219-4a17-4014-81d6-19448aff0f6f",
               "leftValue": "={{ $('Status prüfen').first().json.ist_video }}",
               "rightValue": "",
               "operator": {
@@ -553,7 +553,7 @@
           },
           "conditions": [
             {
-              "id": "4f4b15ad-ea90-4506-9054-7937b3f7b935",
+              "id": "1649868d-13c3-4244-a9d3-22c3354b4b8c",
               "leftValue": "={{ $json.status_code }}",
               "rightValue": "FINISHED",
               "operator": {
@@ -701,13 +701,82 @@
       ],
       "parameters": {
         "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
-        "text": "=✅ <b>Veröffentlicht</b> ({{ $('Status: veröffentlicht').first().json.post_id }})\nInstagram: {{ $('Status: veröffentlicht').first().json.permalink }}\nFacebook-ID: {{ $('Status: veröffentlicht').first().json.fb_post_id }}\nManyChat-Keyword aktiv: <b>{{ $('Status prüfen').first().json.keyword }}</b>",
+        "text": "=✅ <b>Veröffentlicht</b> ({{ $('Status: veröffentlicht').first().json.post_id }})\nInstagram: {{ $('Status: veröffentlicht').first().json.permalink }}\nFacebook-ID: {{ $('Status: veröffentlicht').first().json.fb_post_id }}\nKommentar-Keyword aktiv: <b>{{ $('Status prüfen').first().json.keyword }}</b>",
         "additionalFields": {
           "parse_mode": "HTML",
           "appendAttribution": false,
           "disable_web_page_preview": true
         }
       }
+    },
+    {
+      "id": "02000d8a-3e6e-59ac-9ed4-b77b254e7934",
+      "name": "Video für TikTok/YouTube?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "fa9157ca-bab3-4ede-93b6-46f75e3618b5",
+              "leftValue": "={{ $('Status prüfen').first().json.ist_video && ($('Konfiguration').first().json.tiktok_aktiv || $('Konfiguration').first().json.youtube_aktiv) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "81f7aaec-140f-5c49-a19d-10ebb900ae5e",
+      "name": "Post-ID übergeben",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4620,
+        100
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { post_id: $('Status prüfen').first().json.post_id } }];\n"
+      }
+    },
+    {
+      "id": "411d6bba-6d20-59ef-878c-d5d457684980",
+      "name": "Workflow 07 starten",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        4840,
+        100
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "ID_VON_WORKFLOW_07",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "notes": "Nach dem Import: hier Workflow '07 Video-Plattformen' auswählen."
     }
   ],
   "connections": {
@@ -1015,6 +1084,39 @@
         [
           {
             "node": "Telegram: veröffentlicht",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram: veröffentlicht": {
+      "main": [
+        [
+          {
+            "node": "Video für TikTok/YouTube?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video für TikTok/YouTube?": {
+      "main": [
+        [
+          {
+            "node": "Post-ID übergeben",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-ID übergeben": {
+      "main": [
+        [
+          {
+            "node": "Workflow 07 starten",
             "type": "main",
             "index": 0
           }
