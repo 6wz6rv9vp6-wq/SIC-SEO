@@ -47,7 +47,8 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 | **Perplexity API** | Web-Recherche mit Quellen | Modell `sonar-pro` |
 | **Apify** (optional) | Instagram-Posts der Mitbewerber | Actor `apify/instagram-scraper` |
 | **Meta Developer App** | Posten, Insights, Kommentare, Ad Library | siehe Abschnitt 3 |
-| **fal.ai** | Bild (Flux) und Video (Kling) | Modelle in der Konfiguration austauschbar |
+| **fal.ai** | Bilder (Flux), optional B-Roll-Videos (Kling) | Modelle in der Konfiguration austauschbar |
+| **HeyGen** | Avatar-Videos mit deiner Stimme | API-Tarif nötig, siehe Abschnitt 4c |
 | **Gamma** | Leadmagnet als Dokument/PDF | API-Zugriff ab Pro-Plan |
 | **Telegram-Bot** | Freigabe & Benachrichtigungen | über @BotFather |
 | **Komently** | Kommentar → DM → E-Mail abfragen → Guide senden | Instagram + Facebook; E-Mail-Abfrage laut Komently im Pro-Tarif |
@@ -67,6 +68,7 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
    | Header Auth | Apify API | Name `Authorization`, Wert `Bearer <TOKEN>` |
    | Header Auth | fal.ai API | Name `Authorization`, Wert `Key <FAL_KEY>` |
    | Header Auth | Gamma API | Name `X-API-KEY`, Wert = Gamma-Key |
+   | Header Auth | HeyGen API | Name `X-Api-Key`, Wert = HeyGen-API-Key |
    | Query Auth | Meta Page Token | Name `access_token`, Wert = langlebiger **Page Access Token** |
    | Telegram API | Telegram Bot | Bot-Token |
    | Google Sheets OAuth2 | Google Sheets | Google-Login |
@@ -150,10 +152,36 @@ Nach dem Import im Node **„Workflow 07 starten“** (Workflow 03) den Workflow
 
 ### Videos für TikTok/Shorts
 
-Die erzeugten Clips sind B-Roll ohne Ton (`video_dauer: '10'`, maximal 10 s). Das funktioniert mit Text-Overlay und Trend-Sound, persönliche Videos laufen auf TikTok und YouTube aber meist deutlich besser. Zwei Wege dahin:
+Standard für Video-Posts ist jetzt **HeyGen**: Dein Avatar spricht einen Text von 30–45 Sekunden, den Claude passend zum Post schreibt, mit eingebrannten Untertiteln (siehe Abschnitt 4c). Mit `video_quelle: 'fal'` bekommst du stattdessen kurze KI-B-Roll-Clips ohne Ton. Eigene Aufnahmen gehen weiterhin: öffentliche Video-URL vor der Freigabe in die Spalte `media_url` eintragen.
 
-- **Eigene Clips:** Video selbst aufnehmen, in Google Drive/Dropbox legen und die öffentliche URL in die Spalte `media_url` eintragen, bevor du freigibst.
-- **Avatar-Video** mit HeyGen (dein digitaler Zwilling spricht den Text). Das kann ich als Alternative zu fal.ai einbauen.
+## 4c. HeyGen – dein Avatar spricht die Videos
+
+Bei Video-Posts schreibt Claude zusätzlich einen **Sprechertext**: Hook, 2–3 konkrete Punkte, CTA mit Keyword, optimiert für Text-to-Speech. HeyGen erzeugt daraus ein Hochkant-Video (1080×1920) mit deinem Avatar und deiner Stimme. In der Telegram-Freigabe siehst du Video, Sprechertext und alle Plattform-Texte.
+
+### Einmalig in HeyGen
+
+1. **Avatar anlegen:** In HeyGen einen **Instant Avatar** (digitaler Zwilling) aus einem ca. 2-minütigen Video von dir erstellen. HeyGen verlangt dafür ein Einwilligungsvideo. Alternativ geht ein Foto-Avatar (Talking Photo).
+   Tipps für die Aufnahme: ruhiger Hintergrund, gutes Licht von vorn, Hochformat, natürlich sprechen, Hände ruhig.
+2. **Stimme:** Beim Instant Avatar wird deine Stimme meist mit geklont, sonst unter *Voices → Voice Clone* anlegen.
+3. **API-Key:** *Settings → API* den Key kopieren. Für die API braucht HeyGen einen Tarif mit API-Guthaben; 1080p und lange Videos sind nicht in jedem Tarif enthalten.
+4. **IDs herausfinden**, z. B. im Terminal auf dem Mac:
+   ```bash
+   curl -s -H "X-Api-Key: DEIN_KEY" https://api.heygen.com/v2/avatars | python3 -m json.tool | grep -E '"(avatar_id|avatar_name|talking_photo_id|talking_photo_name)"'
+   curl -s -H "X-Api-Key: DEIN_KEY" https://api.heygen.com/v2/voices  | python3 -m json.tool | grep -E '"(voice_id|name|language)"'
+   ```
+
+### In n8n
+
+1. Credential **Header Auth** „HeyGen API“ anlegen: Name `X-Api-Key`, Wert = API-Key. In Workflow 02 („HeyGen – Video beauftragen“, „HeyGen – Status“) und 03 („HeyGen: aktuelle Video-URL“) auswählen.
+2. In der Konfiguration setzen: `video_quelle: 'heygen'`, `heygen_avatar_id`, `heygen_voice_id`, bei Foto-Avatar `heygen_avatar_typ: 'talking_photo'`. Optional `heygen_hintergrund` (Farbe wie `#F4F1EC` oder Bild-URL, z. B. dein Büro).
+3. Zum Ausprobieren `heygen_test: true`: kostenlose Testvideos mit Wasserzeichen. Danach wieder auf `false`.
+
+### Gut zu wissen
+
+- **Dauer:** Ein Video braucht bei HeyGen meist ein paar Minuten. Workflow 02 fragt jede Minute nach, insgesamt bis zu ca. 40 Minuten.
+- **Ablaufende Links:** HeyGen-Download-Links gelten nur einige Tage. Workflow 03 holt deshalb beim Freigeben automatisch einen frischen Link.
+- **KI-Kennzeichnung:** Seit August 2026 gilt die Transparenzpflicht für KI-generierte Videos (EU AI Act, Art. 50). Bei HeyGen-Videos wird `ki_hinweis` automatisch an alle Texte angehängt. YouTube bekommt zusätzlich das Synthetic-Media-Flag, auf TikTok in der App „KI-generierte Inhalte“ einschalten.
+- **Telegram-Vorschau:** Telegram nimmt Videos per URL nur bis 20 MB an. Bei größeren Videos kommt die Freigabe ohne eingebettetes Video, der Link „Medien ansehen“ steht in der Nachricht.
 
 ## 5. Ablauf im Alltag
 
@@ -175,7 +203,7 @@ Den Inhalt eines Entwurfs änderst du direkt im Sheet (`Posts` → `caption_inst
 
 ## 7. Anpassen & Erweitern
 
-- **Andere Medien-Modelle**: `fal_image_model` / `fal_video_model` in der Konfiguration ändern (z. B. Veo, Runway). Für ein sprechendes Avatar-Video eignet sich HeyGen – dafür den Block „fal.ai – Video …“ durch die HeyGen-API ersetzen.
+- **Andere Medien-Modelle**: `fal_image_model` / `fal_video_model` in der Konfiguration ändern (z. B. Veo, Runway); Umschalten zwischen Avatar und B-Roll über `video_quelle`.
 - **Feste Posting-Zeiten** statt sofort: In Workflow 03 bei „✅“ nur den Status auf `freigegeben` setzen und einen zusätzlichen Schedule (z. B. 11:30 / 18:00) bauen, der freigegebene Posts veröffentlicht.
 - **Auto-Antworten auf Kommentare**: In Workflow 04 kann ein HTTP-Node `POST /{comment-id}/replies` den Antwortvorschlag direkt posten – empfehle ich erst, wenn die Vorschläge über ein paar Wochen passen.
 - **HYPOFY**: Der Node „HYPOFY: Lead anlegen (optional)“ in Workflow 05 ist deaktiviert. Endpunkt und Feldnamen aus der HYPOFY-API-Doku eintragen und aktivieren, dann landen Leads direkt im CRM.

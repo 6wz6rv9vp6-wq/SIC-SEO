@@ -31,7 +31,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // Sekunden ('5' oder '10'); für TikTok/Shorts eher 10\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    // Videoquelle für Video-Posts\n    video_quelle: 'heygen',                // 'heygen' = dein Avatar spricht den Text, 'fal' = KI-B-Roll ohne Ton\n    heygen_avatar_typ: 'avatar',           // 'avatar' (Studio-/Instant-Avatar) oder 'talking_photo' (Foto-Avatar)\n    heygen_avatar_id: '',                  // ID deines Avatars (bzw. talking_photo_id)\n    heygen_voice_id: '',                   // ID deiner (geklonten) Stimme\n    heygen_avatar_style: 'normal',\n    heygen_hintergrund: '#F4F1EC',         // Farbe ODER Bild-URL (https://...)\n    heygen_untertitel: true,               // Untertitel ins Video brennen (wichtig: viele schauen ohne Ton)\n    heygen_test: false,                    // true = kostenloses Testvideo mit Wasserzeichen\n    ki_hinweis: '🤖 Video mit KI-Avatar erstellt.',  // Transparenzhinweis (EU AI Act Art. 50), wird bei HeyGen-Videos angehängt\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
       }
     },
     {
@@ -89,7 +89,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const c = $('Konfiguration').first().json;\nconst i = $input.first().json;\nconst kwText = c.keywords[i.keyword] || i.leadmagnet_titel;\nconst system = `Du schreibst Social-Media-Posts für ${c.firma} (${c.ansprechpartner}), ${c.leistung}. Region: ${c.region}.\nZielgruppe: ${c.zielgruppe}. Ansprache: \"${c.ansprache}\". Ton: nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis.\nAufbau Instagram-Caption: starker Hook in Zeile 1 → 3–6 kurze Absätze mit echtem Mehrwert → Call-to-Action:\n\"Kommentiere ${i.keyword} und ich schicke dir ${kwText} kostenlos per DM.\" (max. 2.000 Zeichen, ohne Hashtags).\nFacebook-Text: gleiche Botschaft, etwas ausführlicher, gleicher CTA mit Keyword ${i.keyword}, zusätzlich Hinweis auf Terminbuchung: ${c.termin_link}.\nhashtags: 8–12 passende deutsche Hashtags inkl. regionaler (#braunschweig #göttingen), als ein String.\nbild_prompt: ENGLISCHER Prompt für ein fotorealistisches Bild im Hochformat 4:5, authentisch, keine Schrift/Logos/Zahlen im Bild, keine erkennbaren realen Personen.\nvideo_prompt: ENGLISCHER Prompt für einen 5–10 s Clip im Hochformat 9:16 (B-Roll, ruhige Kamerafahrt), ohne Schrift im Bild.\nalt_text: deutsche Bildbeschreibung (Barrierefreiheit).\nleadmagnet_inhalt: ausführliche Gliederung + Inhalte (Markdown) für den Leadmagneten \"${i.leadmagnet_titel}\" – 6–8 Abschnitte, praxisnah, mit Checklisten. Letzter Abschnitt: Einladung zum kostenlosen Beratungsgespräch (${c.termin_link}).\ntext_tiktok: kurze TikTok-Caption (max. 300 Zeichen): Hook, 1–2 Sätze Mehrwert, CTA \"Gratis-Guide über den Link in meiner Bio\", 3–5 Hashtags.\nyoutube_titel: Titel für YouTube Shorts, max. 80 Zeichen, neugierig machend, ohne Clickbait, ohne Hashtags.\nyoutube_beschreibung: 2–4 Sätze Beschreibung für YouTube Shorts mit Mehrwert, OHNE Links (Links werden automatisch angehängt), am Ende 3–5 Hashtags inkl. #Shorts.\n\nRechtliche Leitplanken (verbindlich, Werbung für Immobiliar-Verbraucherdarlehen in Deutschland):\\n- Nenne KEINE konkreten Zinssätze, Raten oder Effektivzinsen (sonst Pflichtangaben + repräsentatives Beispiel nach § 17 PAngV nötig).\\n- Keine Heilsversprechen oder Superlative (\\\"garantiert\\\", \\\"beste Konditionen\\\", \\\"immer\\\", \\\"sicher genehmigt\\\").\\n- Keine individuelle Beratung im Post – allgemeine Information, Beratung nur im Gespräch.\\n- Keine falschen Fakten zu Förderprogrammen; wenn unsicher, allgemein bleiben (\\\"aktuelle Förderprogramme prüfen\\\").\\n- Keine Mitbewerber namentlich nennen oder abwerten.`;\nconst user = `Post-Idee:\\nTitel: ${i.titel}\\nHook: ${i.hook}\\nKernaussage: ${i.kernaussage}\\nFormat: ${i.format}\\nLeadmagnet: ${i.leadmagnet_titel} – ${i.leadmagnet_beschreibung}\\nKeyword: ${i.keyword}`;\nreturn [{ json: { idee: i, claude_body: {\n  model: 'claude-opus-5-5',\n  max_tokens: 16000,\n  fallbacks: 'default',\n  output_config: { effort: 'medium', format: { type: 'json_schema', schema: {\"type\": \"object\", \"properties\": {\"caption_instagram\": {\"type\": \"string\"}, \"text_facebook\": {\"type\": \"string\"}, \"hashtags\": {\"type\": \"string\"}, \"bild_prompt\": {\"type\": \"string\"}, \"video_prompt\": {\"type\": \"string\"}, \"alt_text\": {\"type\": \"string\"}, \"leadmagnet_inhalt\": {\"type\": \"string\"}, \"text_tiktok\": {\"type\": \"string\"}, \"youtube_titel\": {\"type\": \"string\"}, \"youtube_beschreibung\": {\"type\": \"string\"}}, \"required\": [\"caption_instagram\", \"text_facebook\", \"hashtags\", \"bild_prompt\", \"video_prompt\", \"alt_text\", \"leadmagnet_inhalt\", \"text_tiktok\", \"youtube_titel\", \"youtube_beschreibung\"], \"additionalProperties\": false} } },\n  system,\n  messages: [{ role: 'user', content: user }],\n}}}];\n"
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst i = $input.first().json;\nconst kwText = c.keywords[i.keyword] || i.leadmagnet_titel;\nconst system = `Du schreibst Social-Media-Posts für ${c.firma} (${c.ansprechpartner}), ${c.leistung}. Region: ${c.region}.\nZielgruppe: ${c.zielgruppe}. Ansprache: \"${c.ansprache}\". Ton: nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis.\nAufbau Instagram-Caption: starker Hook in Zeile 1 → 3–6 kurze Absätze mit echtem Mehrwert → Call-to-Action:\n\"Kommentiere ${i.keyword} und ich schicke dir ${kwText} kostenlos per DM.\" (max. 2.000 Zeichen, ohne Hashtags).\nFacebook-Text: gleiche Botschaft, etwas ausführlicher, gleicher CTA mit Keyword ${i.keyword}, zusätzlich Hinweis auf Terminbuchung: ${c.termin_link}.\nhashtags: 8–12 passende deutsche Hashtags inkl. regionaler (#braunschweig #göttingen), als ein String.\nbild_prompt: ENGLISCHER Prompt für ein fotorealistisches Bild im Hochformat 4:5, authentisch, keine Schrift/Logos/Zahlen im Bild, keine erkennbaren realen Personen.\nvideo_prompt: ENGLISCHER Prompt für einen 5–10 s Clip im Hochformat 9:16 (B-Roll, ruhige Kamerafahrt), ohne Schrift im Bild.\nalt_text: deutsche Bildbeschreibung (Barrierefreiheit).\nleadmagnet_inhalt: ausführliche Gliederung + Inhalte (Markdown) für den Leadmagneten \"${i.leadmagnet_titel}\" – 6–8 Abschnitte, praxisnah, mit Checklisten. Letzter Abschnitt: Einladung zum kostenlosen Beratungsgespräch (${c.termin_link}).\ntext_tiktok: kurze TikTok-Caption (max. 300 Zeichen): Hook, 1–2 Sätze Mehrwert, CTA \"Gratis-Guide über den Link in meiner Bio\", 3–5 Hashtags.\nyoutube_titel: Titel für YouTube Shorts, max. 80 Zeichen, neugierig machend, ohne Clickbait, ohne Hashtags.\nyoutube_beschreibung: 2–4 Sätze Beschreibung für YouTube Shorts mit Mehrwert, OHNE Links (Links werden automatisch angehängt), am Ende 3–5 Hashtags inkl. #Shorts.\nsprechertext: Text, den ${c.ansprechpartner} als Avatar in einem Hochkant-Video spricht (nur bei Format video, sonst leerer String). Ich-Form, gesprochene Sprache, Ansprache \"${c.ansprache}\".\n  Länge 30–45 Sekunden (ca. 80–120 Wörter). Satz 1 = Hook (max. 10 Wörter), dann 2–3 konkrete Punkte, dann CTA: \"Schreib ${i.keyword} in die Kommentare – oder hol dir den Guide über den Link.\" (bei Ansprache \"Sie\" entsprechend formulieren).\n  Für Text-to-Speech schreiben: keine Abkürzungen (z. B. \"zum Beispiel\", \"Prozent\", \"Euro\"), keine Emojis, keine Hashtags, keine Klammern, Zahlen als Ziffern nur wenn eindeutig sprechbar.\n\nRechtliche Leitplanken (verbindlich, Werbung für Immobiliar-Verbraucherdarlehen in Deutschland):\\n- Nenne KEINE konkreten Zinssätze, Raten oder Effektivzinsen (sonst Pflichtangaben + repräsentatives Beispiel nach § 17 PAngV nötig).\\n- Keine Heilsversprechen oder Superlative (\\\"garantiert\\\", \\\"beste Konditionen\\\", \\\"immer\\\", \\\"sicher genehmigt\\\").\\n- Keine individuelle Beratung im Post – allgemeine Information, Beratung nur im Gespräch.\\n- Keine falschen Fakten zu Förderprogrammen; wenn unsicher, allgemein bleiben (\\\"aktuelle Förderprogramme prüfen\\\").\\n- Keine Mitbewerber namentlich nennen oder abwerten.`;\nconst user = `Post-Idee:\\nTitel: ${i.titel}\\nHook: ${i.hook}\\nKernaussage: ${i.kernaussage}\\nFormat: ${i.format}\\nLeadmagnet: ${i.leadmagnet_titel} – ${i.leadmagnet_beschreibung}\\nKeyword: ${i.keyword}`;\nreturn [{ json: { idee: i, claude_body: {\n  model: 'claude-opus-5-5',\n  max_tokens: 16000,\n  fallbacks: 'default',\n  output_config: { effort: 'medium', format: { type: 'json_schema', schema: {\"type\": \"object\", \"properties\": {\"caption_instagram\": {\"type\": \"string\"}, \"text_facebook\": {\"type\": \"string\"}, \"hashtags\": {\"type\": \"string\"}, \"bild_prompt\": {\"type\": \"string\"}, \"video_prompt\": {\"type\": \"string\"}, \"alt_text\": {\"type\": \"string\"}, \"leadmagnet_inhalt\": {\"type\": \"string\"}, \"text_tiktok\": {\"type\": \"string\"}, \"youtube_titel\": {\"type\": \"string\"}, \"youtube_beschreibung\": {\"type\": \"string\"}, \"sprechertext\": {\"type\": \"string\"}}, \"required\": [\"caption_instagram\", \"text_facebook\", \"hashtags\", \"bild_prompt\", \"video_prompt\", \"alt_text\", \"leadmagnet_inhalt\", \"text_tiktok\", \"youtube_titel\", \"youtube_beschreibung\", \"sprechertext\"], \"additionalProperties\": false} } },\n  system,\n  messages: [{ role: 'user', content: user }],\n}}}];\n"
       }
     },
     {
@@ -241,7 +241,7 @@
           },
           "conditions": [
             {
-              "id": "7ccc7962-c4e0-47fe-a382-83f216ef8453",
+              "id": "03043f1a-40b7-4dac-92f4-039f1b6f98fc",
               "leftValue": "={{ $json.status }}",
               "rightValue": "completed",
               "operator": {
@@ -287,7 +287,7 @@
           },
           "conditions": [
             {
-              "id": "2265cc3e-55ad-48b7-8767-14a472aa6320",
+              "id": "2e3ad1be-a4d2-4da5-bfb3-f33f602d0c4b",
               "leftValue": "={{ $('Post-Daten').first().json.format }}",
               "rightValue": "video",
               "operator": {
@@ -398,7 +398,7 @@
           },
           "conditions": [
             {
-              "id": "733a3543-5f8c-4920-9ad7-0afd1f843deb",
+              "id": "f31e0678-2672-42b7-a804-2c445b735e70",
               "leftValue": "={{ $json.status }}",
               "rightValue": "COMPLETED",
               "operator": {
@@ -432,6 +432,190 @@
       }
     },
     {
+      "id": "bfcec5a3-ce7d-5e14-8f80-c46ac3b3478a",
+      "name": "HeyGen-Avatar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3300,
+        -150
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "338034f4-661e-4434-b723-e5561506007c",
+              "leftValue": "={{ $('Konfiguration').first().json.video_quelle }}",
+              "rightValue": "heygen",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "9922e1c2-b606-5da4-9a38-d475e965a6dd",
+      "name": "HeyGen-Anfrage bauen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3520,
+        -250
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst p = $('Post-Daten').first().json;\nif (!p.sprechertext) throw new Error('Kein Sprechertext von Claude erhalten.');\nif (!c.heygen_avatar_id || !c.heygen_voice_id) throw new Error('heygen_avatar_id / heygen_voice_id in der Konfiguration fehlen.');\nconst character = c.heygen_avatar_typ === 'talking_photo'\n  ? { type: 'talking_photo', talking_photo_id: c.heygen_avatar_id }\n  : { type: 'avatar', avatar_id: c.heygen_avatar_id, avatar_style: c.heygen_avatar_style || 'normal' };\nconst background = /^https?:\\/\\//.test(c.heygen_hintergrund)\n  ? { type: 'image', url: c.heygen_hintergrund }\n  : { type: 'color', value: c.heygen_hintergrund || '#FFFFFF' };\nreturn [{ json: { heygen_body: {\n  title: p.post_id,\n  caption: !!c.heygen_untertitel,\n  test: !!c.heygen_test,\n  dimension: { width: 1080, height: 1920 },\n  video_inputs: [{ character, voice: { type: 'text', input_text: p.sprechertext, voice_id: c.heygen_voice_id, speed: 1.0 }, background }],\n}}}];\n"
+      }
+    },
+    {
+      "id": "ce16b83c-b35c-5070-bacc-e220e12c78bf",
+      "name": "HeyGen – Video beauftragen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3740,
+        -250
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.heygen.com/v2/video/generate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.heygen_body) }}",
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "c4aed57f-234e-58ae-8b4a-606ec42e3575",
+      "name": "HeyGen-Auftrag prüfen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        -250
+      ],
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nif (!r.data?.video_id) throw new Error('HeyGen-Auftrag fehlgeschlagen: ' + JSON.stringify(r.error || r).slice(0, 300));\nreturn [{ json: { video_id: r.data.video_id } }];\n"
+      }
+    },
+    {
+      "id": "60009003-4145-5f5e-a0f2-1ca2067c6441",
+      "name": "HeyGen: 60 s warten",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4180,
+        -250
+      ],
+      "parameters": {
+        "amount": 60,
+        "unit": "seconds"
+      },
+      "webhookId": "850dca75-e7b6-5b49-ae07-74030dbea4ae"
+    },
+    {
+      "id": "1b59c094-2eb4-592f-88b2-f4bc684394d0",
+      "name": "HeyGen – Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4400,
+        -250
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.heygen.com/v1/video_status.get",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "video_id",
+              "value": "={{ $('HeyGen-Auftrag prüfen').first().json.video_id }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "ca973540-8801-5800-8a9b-9a6e212fb515",
+      "name": "HeyGen-Status auswerten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4620,
+        -250
+      ],
+      "parameters": {
+        "jsCode": "const d = $input.first().json.data || {};\nif (d.status === 'failed') throw new Error('HeyGen-Video fehlgeschlagen: ' + JSON.stringify(d.error || d).slice(0, 300));\nif ($runIndex > 40) throw new Error('HeyGen braucht ungewöhnlich lange (Status: ' + d.status + ').');\n// Mit Untertiteln: eingebrannte Version bevorzugen\nconst url = d.video_url_caption || d.video_url || '';\nreturn [{ json: { fertig: d.status === 'completed' && !!url, video: { url }, heygen_video_id: $('HeyGen-Auftrag prüfen').first().json.video_id } }];\n"
+      }
+    },
+    {
+      "id": "64f49a04-0214-55e3-a243-58234ca006fa",
+      "name": "HeyGen fertig?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4840,
+        -250
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "5e1df5ee-d58d-44c6-a5bb-1e23e53bf302",
+              "leftValue": "={{ $json.fertig }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c2284137-d003-5bcf-a0fe-cd472a58a3b6",
+      "name": "HeyGen-Ergebnis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5060,
+        -350
+      ],
+      "parameters": {
+        "jsCode": "// läuft nur einmal (nach der Warteschleife)\nreturn [{ json: $input.first().json }];\n"
+      }
+    },
+    {
       "id": "491b4687-bb64-5108-89cd-44339c8d99e8",
       "name": "Post-Zeile bauen",
       "type": "n8n-nodes-base.code",
@@ -441,7 +625,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const p = $('Post-Daten').first().json;\nconst g = $('Gamma-Ergebnis merken').first().json;\nconst r = $input.first().json;\nconst c = $('Konfiguration').first().json;\nconst media_url = p.format === 'video' ? (r.video?.url || '') : (r.images?.[0]?.url || '');\nif (!media_url) throw new Error('Keine Medien-URL erhalten: ' + JSON.stringify(r).slice(0, 500));\nreturn [{ json: {\n  post_id: p.post_id,\n  idee_id: p.idee_id,\n  erstellt_am: new Date().toISOString(),\n  format: p.format,\n  media_url,\n  caption_instagram: p.caption_instagram + '\\n\\n' + p.hashtags,\n  text_facebook: p.text_facebook,\n  alt_text: p.alt_text,\n  keyword: p.keyword,\n  leadmagnet_titel: p.leadmagnet_titel,\n  gamma_url: g.gammaUrl || '',\n  gamma_pdf_url: g.exportUrl || '',\n  status: 'wartet_auf_freigabe',\n  ig_media_id: '', fb_post_id: '', permalink: '', veroeffentlicht_am: '',\n  reichweite: '', views: '', likes: '', kommentare: '', gespeichert: '', geteilt: '', leads: 0, letzter_check: '',\n  text_tiktok: p.text_tiktok,\n  youtube_titel: p.youtube_titel.slice(0, 100),\n  youtube_beschreibung: `${p.youtube_beschreibung}\n\n🎁 Kostenloser Guide „${p.leadmagnet_titel}“: ${c.n8n_url}/webhook/guide/${p.keyword}\n📅 Kostenloses Beratungsgespräch: ${c.termin_link}`,\n  youtube_video_id: '', tiktok_publish_id: '', tiktok_video_id: '', tiktok_status: '',\n  yt_views: '', yt_likes: '', yt_kommentare: '', tt_views: '', tt_likes: '', tt_kommentare: '', tt_shares: '', video_check: '',\n}}];\n"
+        "jsCode": "const p = $('Post-Daten').first().json;\nconst g = $('Gamma-Ergebnis merken').first().json;\nconst r = $input.first().json;\nconst c = $('Konfiguration').first().json;\nconst media_url = p.format === 'video' ? (r.video?.url || '') : (r.images?.[0]?.url || '');\nconst heygen_video_id = r.heygen_video_id || '';\nconst ki = heygen_video_id && c.ki_hinweis ? '\\n\\n' + c.ki_hinweis : '';\nif (!media_url) throw new Error('Keine Medien-URL erhalten: ' + JSON.stringify(r).slice(0, 500));\nreturn [{ json: {\n  post_id: p.post_id,\n  idee_id: p.idee_id,\n  erstellt_am: new Date().toISOString(),\n  format: p.format,\n  media_url,\n  caption_instagram: p.caption_instagram + ki + '\\n\\n' + p.hashtags,\n  text_facebook: p.text_facebook + ki,\n  alt_text: p.alt_text,\n  keyword: p.keyword,\n  leadmagnet_titel: p.leadmagnet_titel,\n  gamma_url: g.gammaUrl || '',\n  gamma_pdf_url: g.exportUrl || '',\n  status: 'wartet_auf_freigabe',\n  ig_media_id: '', fb_post_id: '', permalink: '', veroeffentlicht_am: '',\n  reichweite: '', views: '', likes: '', kommentare: '', gespeichert: '', geteilt: '', leads: 0, letzter_check: '',\n  text_tiktok: p.text_tiktok + (ki ? ' ' + c.ki_hinweis : ''),\n  youtube_titel: p.youtube_titel.slice(0, 100),\n  youtube_beschreibung: `${p.youtube_beschreibung}\n\n🎁 Kostenloser Guide „${p.leadmagnet_titel}“: ${c.n8n_url}/webhook/guide/${p.keyword}\n📅 Kostenloses Beratungsgespräch: ${c.termin_link}${ki}`,\n  sprechertext: p.format === 'video' ? p.sprechertext : '',\n  heygen_video_id,\n  youtube_video_id: '', tiktok_publish_id: '', tiktok_video_id: '', tiktok_status: '',\n  yt_views: '', yt_likes: '', yt_kommentare: '', tt_views: '', tt_likes: '', tt_kommentare: '', tt_shares: '', video_check: '',\n}}];\n"
       }
     },
     {
@@ -538,7 +722,7 @@
           },
           "conditions": [
             {
-              "id": "344fd413-11ee-4d89-ab88-f23726f1d0d4",
+              "id": "8fb748a2-a886-4322-9a93-236874ef450f",
               "leftValue": "={{ $('Post-Zeile bauen').first().json.format }}",
               "rightValue": "video",
               "operator": {
@@ -568,7 +752,9 @@
         "additionalFields": {
           "caption": "=🎬 Entwurf {{ $('Post-Zeile bauen').first().json.post_id }}"
         }
-      }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Telegram akzeptiert per URL nur Videos bis 20 MB – sonst geht es ohne Vorschau weiter (Link steht in der Freigabe-Nachricht)."
     },
     {
       "id": "fb635e35-278f-5c2b-bd17-5b3dd56e8c2d",
@@ -598,7 +784,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const p = $('Post-Zeile bauen').first().json;\nconst e = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nlet t = `📝 <b>Freigabe: ${e(p.post_id)}</b> (${e(p.format)})\\n\\n<b>Instagram</b>\\n${e(p.caption_instagram)}\\n\\n<b>Facebook</b>\\n${e(p.text_facebook)}`;\nif (p.format === 'video') {\n  const c = $('Konfiguration').first().json;\n  if (c.tiktok_aktiv) t += `\n\n<b>TikTok</b>\n${e(p.text_tiktok)}`;\n  if (c.youtube_aktiv) t += `\n\n<b>YouTube Shorts</b>\n${e(p.youtube_titel)}\n${e(p.youtube_beschreibung)}`;\n}\nt = t.slice(0, 3700);\nt += `\\n\\n🎁 Leadmagnet: <a href=\"${e(p.gamma_url)}\">${e(p.leadmagnet_titel)}</a>\\n🔑 Keyword: <b>${e(p.keyword)}</b>`;\nreturn [{ json: { text: t, post_id: p.post_id } }];\n"
+        "jsCode": "const p = $('Post-Zeile bauen').first().json;\nconst e = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nlet t = `📝 <b>Freigabe: ${e(p.post_id)}</b> (${e(p.format)})\\n\\n<b>Instagram</b>\\n${e(p.caption_instagram)}\\n\\n<b>Facebook</b>\\n${e(p.text_facebook)}`;\nif (p.format === 'video') {\n  const c = $('Konfiguration').first().json;\n  if (p.sprechertext) t += `\\n\\n<b>🎙 Sprechertext (Avatar)</b>\\n${e(p.sprechertext)}`;\n  if (c.tiktok_aktiv) t += `\n\n<b>TikTok</b>\n${e(p.text_tiktok)}`;\n  if (c.youtube_aktiv) t += `\n\n<b>YouTube Shorts</b>\n${e(p.youtube_titel)}\n${e(p.youtube_beschreibung)}`;\n}\nt = t.slice(0, 3700);\nt += `\\n\\n🎬 <a href=\"${e(p.media_url)}\">Medien ansehen</a>`;\nt += `\\n🎁 Leadmagnet: <a href=\"${e(p.gamma_url)}\">${e(p.leadmagnet_titel)}</a>\\n🔑 Keyword: <b>${e(p.keyword)}</b>`;\nreturn [{ json: { text: t, post_id: p.post_id } }];\n"
       }
     },
     {
@@ -822,7 +1008,7 @@
       "main": [
         [
           {
-            "node": "fal.ai – Video beauftragen",
+            "node": "HeyGen-Avatar?",
             "type": "main",
             "index": 0
           }
@@ -830,6 +1016,119 @@
         [
           {
             "node": "fal.ai – Bild erzeugen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen-Avatar?": {
+      "main": [
+        [
+          {
+            "node": "HeyGen-Anfrage bauen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "fal.ai – Video beauftragen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen-Anfrage bauen": {
+      "main": [
+        [
+          {
+            "node": "HeyGen – Video beauftragen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen – Video beauftragen": {
+      "main": [
+        [
+          {
+            "node": "HeyGen-Auftrag prüfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen-Auftrag prüfen": {
+      "main": [
+        [
+          {
+            "node": "HeyGen: 60 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen: 60 s warten": {
+      "main": [
+        [
+          {
+            "node": "HeyGen – Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen – Status": {
+      "main": [
+        [
+          {
+            "node": "HeyGen-Status auswerten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen-Status auswerten": {
+      "main": [
+        [
+          {
+            "node": "HeyGen fertig?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen fertig?": {
+      "main": [
+        [
+          {
+            "node": "HeyGen-Ergebnis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HeyGen: 60 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen-Ergebnis": {
+      "main": [
+        [
+          {
+            "node": "Post-Zeile bauen",
             "type": "main",
             "index": 0
           }
