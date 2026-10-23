@@ -69,7 +69,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const p = $input.first().json;\nif (!p || p.format !== 'video' || !p.media_url) throw new Error('Kein Video-Post: ' + JSON.stringify(p).slice(0, 200));\nreturn [{ json: p }];\n"
+        "jsCode": "const p = $input.first().json;\n    if (!p || p.format !== 'video' || !p.media_url) throw new Error('Kein Video-Post: ' + JSON.stringify(p).slice(0, 200));\n    return [{ json: p }];\n"
       }
     },
     {
@@ -105,7 +105,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const buf = await this.helpers.getBinaryDataBuffer(0, 'data');\nif (buf.length > 64 * 1024 * 1024) throw new Error('Video größer als 64 MB – bitte kürzer/kleiner erzeugen.');\nreturn [{ json: { ...$('Post prüfen').first().json, video_size: buf.length }, binary: $input.first().binary }];\n"
+        "jsCode": "const buf = await this.helpers.getBinaryDataBuffer(0, 'data');\n    if (buf.length > 64 * 1024 * 1024) throw new Error('Video größer als 64 MB – bitte kürzer/kleiner erzeugen.');\n    return [{ json: { ...$('Post prüfen').first().json, video_size: buf.length }, binary: $input.first().binary }];\n"
       }
     },
     {
@@ -127,7 +127,7 @@
           },
           "conditions": [
             {
-              "id": "56c3fd04-baaf-4ef3-9831-c2c2434d51ef",
+              "id": "4fe80b3a-50f6-4289-b900-afd676eefb1b",
               "leftValue": "={{ $('Konfiguration').first().json.youtube_aktiv }}",
               "rightValue": "",
               "operator": {
@@ -211,7 +211,7 @@
         100
       ],
       "parameters": {
-        "jsCode": "const y = $('YouTube: Short hochladen').first().json;\nconst id = y.id || '';\nreturn [{ json: { post_id: $('Videogröße').first().json.post_id, youtube_video_id: id,\n  meldung: id ? `▶️ YouTube Short hochgeladen: https://youtube.com/shorts/${id}` : `⚠️ YouTube-Upload fehlgeschlagen: ${JSON.stringify(y.error || y).slice(0, 300)}` } }];\n"
+        "jsCode": "const y = $('YouTube: Short hochladen').first().json;\n    const id = y.id || '';\n    return [{ json: { post_id: $('Videogröße').first().json.post_id, youtube_video_id: id,\n      meldung: id ? `▶️ YouTube Short hochgeladen: https://youtube.com/shorts/${id}` : `⚠️ YouTube-Upload fehlgeschlagen: ${JSON.stringify(y.error || y).slice(0, 300)}` } }];\n"
       }
     },
     {
@@ -297,7 +297,7 @@
           },
           "conditions": [
             {
-              "id": "ef3dc495-b79a-4892-ac05-2970bd78c0b7",
+              "id": "8f9eb288-ddb3-4144-a6ba-165fbca447b9",
               "leftValue": "={{ $('Konfiguration').first().json.tiktok_aktiv }}",
               "rightValue": "",
               "operator": {
@@ -394,7 +394,7 @@
         500
       ],
       "parameters": {
-        "jsCode": "const r = $input.first().json;\nconst STRICT = true;\nif (!r.access_token) {\n  if (STRICT) throw new Error('TikTok-Token konnte nicht erneuert werden – Workflow 08 (TikTok verbinden) erneut ausführen. ' + JSON.stringify(r).slice(0, 300));\n  return [{ json: { ok: false, access_token: '' } }];\n}\nreturn [{ json: { ok: true, plattform: 'tiktok', access_token: r.access_token, refresh_token: r.refresh_token,\n  open_id: r.open_id || '', scope: r.scope || '', aktualisiert_am: new Date().toISOString() } }];\n"
+        "jsCode": "const r = $input.first().json;\n    const STRICT = true;\n    if (!r.access_token) {\n      if (STRICT) throw new Error('TikTok-Token konnte nicht erneuert werden – Workflow 08 (TikTok verbinden) erneut ausführen. ' + JSON.stringify(r).slice(0, 300));\n      return [{ json: { ok: false, access_token: '' } }];\n    }\n    return [{ json: { ok: true, plattform: 'tiktok', access_token: r.access_token, refresh_token: r.refresh_token,\n      open_id: r.open_id || '', scope: r.scope || '', aktualisiert_am: new Date().toISOString() } }];\n"
       }
     },
     {
@@ -416,7 +416,7 @@
           },
           "conditions": [
             {
-              "id": "50766e83-c36f-4358-9427-e81b207b4ab2",
+              "id": "87fa57fa-9d38-4bc1-a9cd-86e407c72102",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -441,7 +441,7 @@
         660
       ],
       "parameters": {
-        "jsCode": "const t = $input.first().json;\nreturn [{ json: { plattform: t.plattform, access_token: t.access_token, refresh_token: t.refresh_token, open_id: t.open_id, scope: t.scope, aktualisiert_am: t.aktualisiert_am } }];\n"
+        "jsCode": "const t = $input.first().json;\n    return [{ json: { plattform: t.plattform, access_token: t.access_token, refresh_token: t.refresh_token, open_id: t.open_id, scope: t.scope, aktualisiert_am: t.aktualisiert_am } }];\n"
       }
     },
     {
@@ -516,7 +516,7 @@
         500
       ],
       "parameters": {
-        "jsCode": "const c = $('Konfiguration').first().json;\nconst p = $('Videogröße').first().json;\nconst ci = $input.first().json.data || {};\nconst size = p.video_size;\nconst source_info = { source: 'FILE_UPLOAD', video_size: size, chunk_size: size, total_chunk_count: 1 };\nlet url, body;\nif (c.tiktok_modus === 'direkt') {\n  const opts = ci.privacy_level_options || [];\n  const privacy = opts.includes('PUBLIC_TO_EVERYONE') ? 'PUBLIC_TO_EVERYONE' : (opts.includes('SELF_ONLY') ? 'SELF_ONLY' : opts[0]);\n  if (!privacy) throw new Error('TikTok Creator-Info ohne privacy_level_options: ' + JSON.stringify($input.first().json).slice(0, 300));\n  url = 'https://open.tiktokapis.com/v2/post/publish/video/init/';\n  body = { post_info: { title: String(p.text_tiktok || '').slice(0, 2200), privacy_level: privacy,\n    disable_comment: false, disable_duet: false, disable_stitch: false }, source_info };\n} else {\n  url = 'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/';\n  body = { source_info };\n}\nreturn [{ json: { init_url: url, init_body: body, video_size: size } }];\n"
+        "jsCode": "const c = $('Konfiguration').first().json;\n    const p = $('Videogröße').first().json;\n    const ci = $input.first().json.data || {};\n    const size = p.video_size;\n    const source_info = { source: 'FILE_UPLOAD', video_size: size, chunk_size: size, total_chunk_count: 1 };\n    let url, body;\n    if (c.tiktok_modus === 'direkt') {\n      const opts = ci.privacy_level_options || [];\n      const privacy = opts.includes('PUBLIC_TO_EVERYONE') ? 'PUBLIC_TO_EVERYONE' : (opts.includes('SELF_ONLY') ? 'SELF_ONLY' : opts[0]);\n      if (!privacy) throw new Error('TikTok Creator-Info ohne privacy_level_options: ' + JSON.stringify($input.first().json).slice(0, 300));\n      url = 'https://open.tiktokapis.com/v2/post/publish/video/init/';\n      body = { post_info: { title: String(p.text_tiktok || '').slice(0, 2200), privacy_level: privacy,\n        disable_comment: false, disable_duet: false, disable_stitch: false }, source_info };\n    } else {\n      url = 'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/';\n      body = { source_info };\n    }\n    return [{ json: { init_url: url, init_body: body, video_size: size } }];\n"
       }
     },
     {
@@ -558,7 +558,7 @@
         500
       ],
       "parameters": {
-        "jsCode": "const r = $input.first().json;\nif (!r.data?.upload_url) throw new Error('TikTok init fehlgeschlagen: ' + JSON.stringify(r.error || r).slice(0, 300));\nconst size = $('TikTok: Upload vorbereiten').first().json.video_size;\nreturn [{ json: { publish_id: r.data.publish_id, upload_url: r.data.upload_url, range: `bytes 0-${size - 1}/${size}` },\n  binary: $('Videogröße').first().binary }];\n"
+        "jsCode": "const r = $input.first().json;\n    if (!r.data?.upload_url) throw new Error('TikTok init fehlgeschlagen: ' + JSON.stringify(r.error || r).slice(0, 300));\n    const size = $('TikTok: Upload vorbereiten').first().json.video_size;\n    return [{ json: { publish_id: r.data.publish_id, upload_url: r.data.upload_url, range: `bytes 0-${size - 1}/${size}` },\n      binary: $('Videogröße').first().binary }];\n"
       }
     },
     {
@@ -654,7 +654,7 @@
         500
       ],
       "parameters": {
-        "jsCode": "// Antwort als Text lesen: TikTok-Video-IDs sind 19-stellig und würden als Zahl gerundet\nconst raw = String($input.first().json.raw || '');\nconst d = JSON.parse(raw).data || {};\nconst idMatch = raw.match(/\"publicaly_available_post_id\"\\s*:\\s*\\[\\s*\"?(\\d+)/);\nd.publicaly_available_post_id = idMatch ? [idMatch[1]] : [];\nif (d.status === 'FAILED') throw new Error('TikTok-Upload fehlgeschlagen: ' + (d.fail_reason || JSON.stringify(d)));\nif ($runIndex > 30) throw new Error('TikTok-Verarbeitung dauert zu lange (Status: ' + d.status + ')');\nconst fertig = ['PUBLISH_COMPLETE', 'SEND_TO_USER_INBOX'].includes(d.status);\nreturn [{ json: { fertig, status: d.status, video_id: (d.publicaly_available_post_id || [])[0] || '' } }];\n"
+        "jsCode": "// Antwort als Text lesen: TikTok-Video-IDs sind 19-stellig und würden als Zahl gerundet\n    const raw = String($input.first().json.raw || '');\n    const d = JSON.parse(raw).data || {};\n    const idMatch = raw.match(/\"publicaly_available_post_id\"\\s*:\\s*\\[\\s*\"?(\\d+)/);\n    d.publicaly_available_post_id = idMatch ? [idMatch[1]] : [];\n    if (d.status === 'FAILED') throw new Error('TikTok-Upload fehlgeschlagen: ' + (d.fail_reason || JSON.stringify(d)));\n    if ($runIndex > 30) throw new Error('TikTok-Verarbeitung dauert zu lange (Status: ' + d.status + ')');\n    const fertig = ['PUBLISH_COMPLETE', 'SEND_TO_USER_INBOX'].includes(d.status);\n    return [{ json: { fertig, status: d.status, video_id: (d.publicaly_available_post_id || [])[0] || '' } }];\n"
       }
     },
     {
@@ -676,7 +676,7 @@
           },
           "conditions": [
             {
-              "id": "e513dd89-bef4-49c3-92cb-5544e10b5330",
+              "id": "e602d407-d78a-497a-9f63-af13c1d9aacf",
               "leftValue": "={{ $json.fertig }}",
               "rightValue": "",
               "operator": {
@@ -701,7 +701,7 @@
         400
       ],
       "parameters": {
-        "jsCode": "const s = $input.first().json;\nreturn [{ json: { post_id: $('Videogröße').first().json.post_id, tiktok_publish_id: $('TikTok: Video anhängen').first().json.publish_id,\n  tiktok_video_id: s.video_id ? 'tt:' + s.video_id : '', tiktok_status: s.status } }];\n"
+        "jsCode": "const s = $input.first().json;\n    return [{ json: { post_id: $('Videogröße').first().json.post_id, tiktok_publish_id: $('TikTok: Video anhängen').first().json.publish_id,\n      tiktok_video_id: s.video_id ? 'tt:' + s.video_id : '', tiktok_status: s.status } }];\n"
       }
     },
     {

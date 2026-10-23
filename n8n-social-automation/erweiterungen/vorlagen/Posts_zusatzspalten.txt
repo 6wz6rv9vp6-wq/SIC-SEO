@@ -1,0 +1,2 @@
+Zusätzliche Spalten für den Tab "Posts" (rechts an die vorhandenen anhängen):
+text_tiktok,youtube_titel,youtube_beschreibung,sprechertext,heygen_video_id,youtube_video_id,tiktok_publish_id,tiktok_video_id,tiktok_status,yt_views,yt_likes,yt_kommentare,tt_views,tt_likes,tt_kommentare,tt_shares,video_check

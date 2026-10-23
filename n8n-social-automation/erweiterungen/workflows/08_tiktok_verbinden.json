@@ -41,7 +41,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const c = $('Konfiguration').first().json;\nconst q = $('TikTok-Login').first().json.query || {};\nconst st = $getWorkflowStaticData('global');\nconst redirect_uri = `${c.n8n_url}/webhook/tiktok-callback`;\nif (!q.code) {\n  // Schritt 1: zu TikTok weiterleiten\n  st.state = Math.random().toString(36).slice(2) + Date.now().toString(36);\n  const url = 'https://www.tiktok.com/v2/auth/authorize/?' + new URLSearchParams({\n    client_key: c.tiktok_client_key, response_type: 'code', redirect_uri, state: st.state,\n    scope: 'user.info.basic,video.upload,video.publish,video.list',\n  }).toString();\n  return [{ json: { schritt: 'start', url } }];\n}\n// Schritt 2: TikTok hat mit ?code=... zurückgeleitet\nif (!st.state || q.state !== st.state) throw new Error('TikTok-Login: ungültiger state – Login bitte neu starten.');\ndelete st.state;\nreturn [{ json: { schritt: 'rueckkehr', code: q.code, redirect_uri } }];\n"
+        "jsCode": "const c = $('Konfiguration').first().json;\n    const q = $('TikTok-Login').first().json.query || {};\n    const st = $getWorkflowStaticData('global');\n    const redirect_uri = `${c.n8n_url}/webhook/tiktok-callback`;\n    if (!q.code) {\n      // Schritt 1: zu TikTok weiterleiten\n      st.state = Math.random().toString(36).slice(2) + Date.now().toString(36);\n      const url = 'https://www.tiktok.com/v2/auth/authorize/?' + new URLSearchParams({\n        client_key: c.tiktok_client_key, response_type: 'code', redirect_uri, state: st.state,\n        scope: 'user.info.basic,video.upload,video.publish,video.list',\n      }).toString();\n      return [{ json: { schritt: 'start', url } }];\n    }\n    // Schritt 2: TikTok hat mit ?code=... zurückgeleitet\n    if (!st.state || q.state !== st.state) throw new Error('TikTok-Login: ungültiger state – Login bitte neu starten.');\n    delete st.state;\n    return [{ json: { schritt: 'rueckkehr', code: q.code, redirect_uri } }];\n"
       }
     },
     {
@@ -63,7 +63,7 @@
           },
           "conditions": [
             {
-              "id": "a8f6ba8d-aca2-4b8e-b066-7fabe5b7ab4f",
+              "id": "99b86132-8dd7-430d-8973-c16be264d983",
               "leftValue": "={{ $json.schritt }}",
               "rightValue": "rueckkehr",
               "operator": {
@@ -145,7 +145,7 @@
         200
       ],
       "parameters": {
-        "jsCode": "const r = $input.first().json;\nif (!r.refresh_token) throw new Error('TikTok hat keinen Token geliefert: ' + JSON.stringify(r).slice(0, 300));\nreturn [{ json: { plattform: 'tiktok', access_token: r.access_token, refresh_token: r.refresh_token,\n  open_id: r.open_id || '', scope: r.scope || '', aktualisiert_am: new Date().toISOString() } }];\n"
+        "jsCode": "const r = $input.first().json;\n    if (!r.refresh_token) throw new Error('TikTok hat keinen Token geliefert: ' + JSON.stringify(r).slice(0, 300));\n    return [{ json: { plattform: 'tiktok', access_token: r.access_token, refresh_token: r.refresh_token,\n      open_id: r.open_id || '', scope: r.scope || '', aktualisiert_am: new Date().toISOString() } }];\n"
       }
     },
     {

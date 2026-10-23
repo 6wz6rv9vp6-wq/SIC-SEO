@@ -77,7 +77,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const grenze = Date.now() - 30 * 24 * 3600 * 1000;\nconst posts = $input.all().map(i => i.json)\n  .filter(p => (p.youtube_video_id || p.tiktok_video_id) && new Date(p.veroeffentlicht_am).getTime() > grenze);\nif (!posts.length) return [];\nreturn [{ json: {\n  posts,\n  yt_ids: posts.map(p => p.youtube_video_id).filter(Boolean).slice(0, 50).join(','),\n  tt_ids: posts.map(p => String(p.tiktok_video_id || '').replace(/^tt:/, '')).filter(Boolean).slice(0, 20),\n}}];\n"
+        "jsCode": "const grenze = Date.now() - 30 * 24 * 3600 * 1000;\n    const posts = $input.all().map(i => i.json)\n      .filter(p => (p.youtube_video_id || p.tiktok_video_id) && new Date(p.veroeffentlicht_am).getTime() > grenze);\n    if (!posts.length) return [];\n    return [{ json: {\n      posts,\n      yt_ids: posts.map(p => p.youtube_video_id).filter(Boolean).slice(0, 50).join(','),\n      tt_ids: posts.map(p => String(p.tiktok_video_id || '').replace(/^tt:/, '')).filter(Boolean).slice(0, 20),\n    }}];\n"
       }
     },
     {
@@ -196,7 +196,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const r = $input.first().json;\nconst STRICT = false;\nif (!r.access_token) {\n  if (STRICT) throw new Error('TikTok-Token konnte nicht erneuert werden – Workflow 08 (TikTok verbinden) erneut ausführen. ' + JSON.stringify(r).slice(0, 300));\n  return [{ json: { ok: false, access_token: '' } }];\n}\nreturn [{ json: { ok: true, plattform: 'tiktok', access_token: r.access_token, refresh_token: r.refresh_token,\n  open_id: r.open_id || '', scope: r.scope || '', aktualisiert_am: new Date().toISOString() } }];\n"
+        "jsCode": "const r = $input.first().json;\n    const STRICT = false;\n    if (!r.access_token) {\n      if (STRICT) throw new Error('TikTok-Token konnte nicht erneuert werden – Workflow 08 (TikTok verbinden) erneut ausführen. ' + JSON.stringify(r).slice(0, 300));\n      return [{ json: { ok: false, access_token: '' } }];\n    }\n    return [{ json: { ok: true, plattform: 'tiktok', access_token: r.access_token, refresh_token: r.refresh_token,\n      open_id: r.open_id || '', scope: r.scope || '', aktualisiert_am: new Date().toISOString() } }];\n"
       }
     },
     {
@@ -218,7 +218,7 @@
           },
           "conditions": [
             {
-              "id": "19975ec3-4f5e-420f-bc92-c831384553c3",
+              "id": "7dd72731-d948-4be8-8f9a-403165cd58c4",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -243,7 +243,7 @@
         460
       ],
       "parameters": {
-        "jsCode": "const t = $input.first().json;\nreturn [{ json: { plattform: t.plattform, access_token: t.access_token, refresh_token: t.refresh_token, open_id: t.open_id, scope: t.scope, aktualisiert_am: t.aktualisiert_am } }];\n"
+        "jsCode": "const t = $input.first().json;\n    return [{ json: { plattform: t.plattform, access_token: t.access_token, refresh_token: t.refresh_token, open_id: t.open_id, scope: t.scope, aktualisiert_am: t.aktualisiert_am } }];\n"
       }
     },
     {
@@ -327,7 +327,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const { posts } = $('Video-Posts (30 Tage)').first().json;\nconst yt = {}; ($('YouTube: Statistiken').first().json.items || []).forEach(v => yt[v.id] = v.statistics || {});\nconst tt = {}; ($input.first().json.data?.videos || []).forEach(v => tt['tt:' + v.id] = v);\nconst jetzt = new Date().toISOString();\nconst zeilen = posts.map(p => {\n  const y = yt[p.youtube_video_id] || {}, t = tt[String(p.tiktok_video_id)] || {};\n  return { post_id: p.post_id,\n    yt_views: y.viewCount ?? p.yt_views ?? '', yt_likes: y.likeCount ?? p.yt_likes ?? '', yt_kommentare: y.commentCount ?? p.yt_kommentare ?? '',\n    tt_views: t.view_count ?? p.tt_views ?? '', tt_likes: t.like_count ?? p.tt_likes ?? '',\n    tt_kommentare: t.comment_count ?? p.tt_kommentare ?? '', tt_shares: t.share_count ?? p.tt_shares ?? '',\n    video_check: jetzt };\n});\nreturn zeilen.map(z => ({ json: z }));\n"
+        "jsCode": "const { posts } = $('Video-Posts (30 Tage)').first().json;\n    const yt = {}; ($('YouTube: Statistiken').first().json.items || []).forEach(v => yt[v.id] = v.statistics || {});\n    const tt = {}; ($input.first().json.data?.videos || []).forEach(v => tt['tt:' + v.id] = v);\n    const jetzt = new Date().toISOString();\n    const zeilen = posts.map(p => {\n      const y = yt[p.youtube_video_id] || {}, t = tt[String(p.tiktok_video_id)] || {};\n      return { post_id: p.post_id,\n        yt_views: y.viewCount ?? p.yt_views ?? '', yt_likes: y.likeCount ?? p.yt_likes ?? '', yt_kommentare: y.commentCount ?? p.yt_kommentare ?? '',\n        tt_views: t.view_count ?? p.tt_views ?? '', tt_likes: t.like_count ?? p.tt_likes ?? '',\n        tt_kommentare: t.comment_count ?? p.tt_kommentare ?? '', tt_shares: t.share_count ?? p.tt_shares ?? '',\n        video_check: jetzt };\n    });\n    return zeilen.map(z => ({ json: z }));\n"
       }
     },
     {
@@ -372,7 +372,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const z = $('Kennzahlen zusammenführen').all().map(i => i.json);\nconst n = v => Number(v || 0).toLocaleString('de-DE');\nconst top = [...z].sort((a, b) => (Number(b.yt_views||0)+Number(b.tt_views||0)) - (Number(a.yt_views||0)+Number(a.tt_views||0))).slice(0, 5);\nlet t = '🎬 <b>Video-Report (letzte 30 Tage)</b>\\n';\ntop.forEach(r => { t += `\\n${r.post_id}: ▶️ YouTube ${n(r.yt_views)} Views / ${n(r.yt_likes)} Likes · 📱 TikTok ${n(r.tt_views)} Views / ${n(r.tt_likes)} Likes`; });\nreturn [{ json: { text: t } }];\n"
+        "jsCode": "const z = $('Kennzahlen zusammenführen').all().map(i => i.json);\n    const n = v => Number(v || 0).toLocaleString('de-DE');\n    const top = [...z].sort((a, b) => (Number(b.yt_views||0)+Number(b.tt_views||0)) - (Number(a.yt_views||0)+Number(a.tt_views||0))).slice(0, 5);\n    let t = '🎬 <b>Video-Report (letzte 30 Tage)</b>\\n';\n    top.forEach(r => { t += `\\n${r.post_id}: ▶️ YouTube ${n(r.yt_views)} Views / ${n(r.yt_likes)} Likes · 📱 TikTok ${n(r.tt_views)} Views / ${n(r.tt_likes)} Likes`; });\n    return [{ json: { text: t } }];\n"
       }
     },
     {

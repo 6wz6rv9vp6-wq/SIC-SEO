@@ -28,7 +28,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    // Videoquelle für Video-Posts\n    video_quelle: 'heygen',                // 'heygen' = dein Avatar spricht den Text, 'fal' = KI-B-Roll ohne Ton\n    heygen_avatar_typ: 'avatar',           // 'avatar' (Studio-/Instant-Avatar) oder 'talking_photo' (Foto-Avatar)\n    heygen_avatar_id: '',                  // ID deines Avatars (bzw. talking_photo_id)\n    heygen_voice_id: '',                   // ID deiner (geklonten) Stimme\n    heygen_avatar_style: 'normal',\n    heygen_hintergrund: '#F4F1EC',         // Farbe ODER Bild-URL (https://...)\n    heygen_untertitel: true,               // Untertitel ins Video brennen (wichtig: viele schauen ohne Ton)\n    heygen_test: false,                    // true = kostenloses Testvideo mit Wasserzeichen\n    ki_hinweis: '🤖 Video mit KI-Avatar erstellt.',  // Transparenzhinweis (EU AI Act Art. 50), wird bei HeyGen-Videos angehängt\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
       }
     },
     {
@@ -126,7 +126,7 @@
           },
           "conditions": [
             {
-              "id": "95c60972-5095-45a7-ac0c-56ea464f6970",
+              "id": "74323507-e3f2-40f2-b165-ed90c3dad58b",
               "leftValue": "={{ $json.offen }}",
               "rightValue": "",
               "operator": {
@@ -182,7 +182,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "f66f19ed-6a95-464e-9edb-d0ed2806e6e4",
+                    "id": "a8a2a58e-5556-4b8b-8d58-cb9dbebbb15b",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "ok",
                     "operator": {
@@ -206,7 +206,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "b45bf1f6-2764-4e82-8594-240b69a3ee79",
+                    "id": "4352130d-211f-4ea1-a39d-118fbe11a0e8",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "neu",
                     "operator": {
@@ -230,7 +230,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "d6865f4c-aa3b-4606-9ef5-564ca45da5b8",
+                    "id": "187c6f6a-761a-46af-b523-8339635f81d8",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "nein",
                     "operator": {
@@ -423,65 +423,48 @@
       }
     },
     {
-      "id": "07d5dd0b-92b7-5d92-8c3e-980ab6ce490b",
-      "name": "HeyGen-Video?",
-      "type": "n8n-nodes-base.if",
+      "id": "f6dfa5a2-4eff-501b-bd46-3f40b327b0b7",
+      "name": "Status: wird veröffentlicht",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         1760,
         0
       ],
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "id": "78f18ac4-6325-44a9-98af-7592c7be44f6",
-              "leftValue": "={{ $json.heygen_video_id }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
+        "jsCode": "return [{ json: { post_id: $('Status prüfen').first().json.post_id, status: 'wird_veroeffentlicht' } }];\n"
       }
     },
     {
-      "id": "06b3db79-1105-5c11-bb93-21745e1ed975",
-      "name": "HeyGen: aktuelle Video-URL",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "id": "b1c21e8c-7e9a-5cc6-a408-7b454c9bc230",
+      "name": "Sheet: Post sperren",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
       "position": [
         1980,
-        -100
+        0
       ],
       "parameters": {
-        "method": "GET",
-        "url": "https://api.heygen.com/v1/video_status.get",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "video_id",
-              "value": "={{ $('Status prüfen').first().json.heygen_video_id }}"
-            }
-          ]
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
         },
-        "options": {
-          "timeout": 120000
-        }
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": []
+        },
+        "options": {}
       }
     },
     {
@@ -494,7 +477,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "const p = $('Status prüfen').first().json;\nlet media_url = p.media_url;\nif (p.heygen_video_id) {\n  const d = $input.first().json.data || {};\n  media_url = d.video_url_caption || d.video_url || media_url;\n}\nreturn [{ json: { ...p, media_url } }];\n"
+        "jsCode": "return [{ json: $('Status prüfen').first().json }];\n"
       }
     },
     {
@@ -538,7 +521,7 @@
           },
           "conditions": [
             {
-              "id": "413062b5-72cd-43cc-9554-6afe8decebae",
+              "id": "bf2a6950-8fc6-4cc7-9940-efd9e27c44d4",
               "leftValue": "={{ $('Medien-URL bereit').first().json.ist_video }}",
               "rightValue": "",
               "operator": {
@@ -606,7 +589,7 @@
         60
       ],
       "parameters": {
-        "jsCode": "const s = $input.first().json.status_code;\nif (s === 'ERROR' || s === 'EXPIRED') throw new Error('Instagram-Verarbeitung fehlgeschlagen: ' + s);\nreturn [{ json: { status_code: s } }];\n"
+        "jsCode": "const s = $input.first().json.status_code;\nif (s === 'ERROR' || s === 'EXPIRED') throw new Error('Instagram-Verarbeitung fehlgeschlagen: ' + s);\nif ($runIndex > 30) throw new Error('Instagram verarbeitet das Reel seit über 15 Minuten (Status: ' + s + ').');\nreturn [{ json: { status_code: s } }];\n"
       }
     },
     {
@@ -628,7 +611,7 @@
           },
           "conditions": [
             {
-              "id": "fafbbcc6-a52d-4366-8b5d-dde4d3b5f3f6",
+              "id": "b15c9e81-1da3-412e-a62c-d3811fe2cf38",
               "leftValue": "={{ $json.status_code }}",
               "rightValue": "FINISHED",
               "operator": {
@@ -783,75 +766,6 @@
           "disable_web_page_preview": true
         }
       }
-    },
-    {
-      "id": "02000d8a-3e6e-59ac-9ed4-b77b254e7934",
-      "name": "Video für TikTok/YouTube?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        4400,
-        200
-      ],
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "id": "b99e0ee2-b249-451b-b0a5-4475ba59d2a3",
-              "leftValue": "={{ $('Status prüfen').first().json.ist_video && ($('Konfiguration').first().json.tiktok_aktiv || $('Konfiguration').first().json.youtube_aktiv) }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      }
-    },
-    {
-      "id": "81f7aaec-140f-5c49-a19d-10ebb900ae5e",
-      "name": "Post-ID übergeben",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4620,
-        100
-      ],
-      "parameters": {
-        "jsCode": "return [{ json: { post_id: $('Status prüfen').first().json.post_id } }];\n"
-      }
-    },
-    {
-      "id": "411d6bba-6d20-59ef-878c-d5d457684980",
-      "name": "Workflow 07 starten",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.1,
-      "position": [
-        4840,
-        100
-      ],
-      "parameters": {
-        "source": "database",
-        "workflowId": {
-          "__rl": true,
-          "value": "ID_VON_WORKFLOW_07",
-          "mode": "id"
-        },
-        "options": {
-          "waitForSubWorkflow": false
-        }
-      },
-      "notes": "Nach dem Import: hier Workflow '07 Video-Plattformen' auswählen."
     }
   ],
   "connections": {
@@ -943,7 +857,7 @@
       "main": [
         [
           {
-            "node": "HeyGen-Video?",
+            "node": "Status: wird veröffentlicht",
             "type": "main",
             "index": 0
           }
@@ -1030,25 +944,18 @@
         ]
       ]
     },
-    "HeyGen-Video?": {
+    "Status: wird veröffentlicht": {
       "main": [
         [
           {
-            "node": "HeyGen: aktuelle Video-URL",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Medien-URL bereit",
+            "node": "Sheet: Post sperren",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HeyGen: aktuelle Video-URL": {
+    "Sheet: Post sperren": {
       "main": [
         [
           {
@@ -1199,39 +1106,6 @@
         [
           {
             "node": "Telegram: veröffentlicht",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Telegram: veröffentlicht": {
-      "main": [
-        [
-          {
-            "node": "Video für TikTok/YouTube?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Video für TikTok/YouTube?": {
-      "main": [
-        [
-          {
-            "node": "Post-ID übergeben",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Post-ID übergeben": {
-      "main": [
-        [
-          {
-            "node": "Workflow 07 starten",
             "type": "main",
             "index": 0
           }

@@ -1,0 +1,1315 @@
+{
+  "name": "03 Telegram-Freigabe & Posting (Instagram + Facebook)",
+  "nodes": [
+    {
+      "id": "6802c8b1-3018-5b2d-8d7b-0b10e5faa74b",
+      "name": "Telegram: Button geklickt",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "updates": [
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "webhookId": "f6d86c0c-e667-5c69-87e9-693e92a80d51"
+    },
+    {
+      "id": "edbd25b0-a8a8-5d22-b262-3b3b452a3a80",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    // Videoquelle für Video-Posts\n    video_quelle: 'heygen',                // 'heygen' = dein Avatar spricht den Text, 'fal' = KI-B-Roll ohne Ton\n    heygen_avatar_typ: 'avatar',           // 'avatar' (Studio-/Instant-Avatar) oder 'talking_photo' (Foto-Avatar)\n    heygen_avatar_id: '',                  // ID deines Avatars (bzw. talking_photo_id)\n    heygen_voice_id: '',                   // ID deiner (geklonten) Stimme\n    heygen_avatar_style: 'normal',\n    heygen_hintergrund: '#F4F1EC',         // Farbe ODER Bild-URL (https://...)\n    heygen_untertitel: true,               // Untertitel ins Video brennen (wichtig: viele schauen ohne Ton)\n    heygen_test: false,                    // true = kostenloses Testvideo mit Wasserzeichen\n    ki_hinweis: '🤖 Video mit KI-Avatar erstellt.',  // Transparenzhinweis (EU AI Act Art. 50), wird bei HeyGen-Videos angehängt\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "90e40c35-86f4-57ac-803a-ac558952ef4d",
+      "name": "Klick auswerten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst q = $('Telegram: Button geklickt').first().json.callback_query;\nconst [aktion, post_id] = String(q.data || '').split('|');\nconst chatOk = String(q.message?.chat?.id) === String(c.telegram_chat_id);\nconst userOk = !c.erlaubte_telegram_user_ids.length || c.erlaubte_telegram_user_ids.map(String).includes(String(q.from?.id));\nif (!chatOk || !userOk) throw new Error('Freigabe von nicht autorisiertem Telegram-Nutzer: ' + q.from?.id);\nreturn [{ json: { aktion, post_id, query_id: q.id, von: q.from?.first_name || '' } }];\n"
+      }
+    },
+    {
+      "id": "cfe6045c-7e30-5fb9-8448-e811f4d2c324",
+      "name": "Telegram: Klick bestätigen",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "resource": "callback",
+        "operation": "answerQuery",
+        "queryId": "={{ $json.query_id }}",
+        "additionalFields": {
+          "text": "Wird verarbeitet …"
+        }
+      }
+    },
+    {
+      "id": "1fab38ab-0ed1-579c-b68c-222530afa016",
+      "name": "Sheet: Post laden",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "post_id",
+              "lookupValue": "={{ $('Klick auswerten').first().json.post_id }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "91d2ff82-d925-5551-a3e4-9597b7c8b820",
+      "name": "Status prüfen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const k = $('Klick auswerten').first().json;\nconst p = $input.all()[0]?.json;\nif (!p || !p.post_id) throw new Error('Post nicht gefunden: ' + k.post_id);\nconst offen = p.status === 'wartet_auf_freigabe';\nreturn [{ json: { ...p, aktion: k.aktion, offen, ist_video: p.format === 'video' } }];\n"
+      }
+    },
+    {
+      "id": "ad7ace74-d24b-5e36-9b2e-befb2a821a90",
+      "name": "Noch offen?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "aa020cae-a0a4-4f93-8b4e-0e8e1784121a",
+              "leftValue": "={{ $json.offen }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "fe15fc58-a618-54b6-8760-2a2b3849c14e",
+      "name": "Telegram: schon erledigt",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        560
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "=ℹ️ Post {{ $json.post_id }} hat bereits Status <b>{{ $json.status }}</b> – nichts getan.",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      }
+    },
+    {
+      "id": "37e3d15e-e5ce-5284-865f-4401f17c0e01",
+      "name": "Aktion",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1540,
+        300
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "5431d72f-18d1-4358-a9c4-ca0502bcfe3f",
+                    "leftValue": "={{ $json.aktion }}",
+                    "rightValue": "ok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "freigeben"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "14c89392-912d-4d5f-9988-5a63fd7db58d",
+                    "leftValue": "={{ $json.aktion }}",
+                    "rightValue": "neu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "neu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "f8defde9-0eea-4d1a-a3db-c074ff9f4e0e",
+                    "leftValue": "={{ $json.aktion }}",
+                    "rightValue": "nein",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "verwerfen"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "704c3ca9-3d77-5027-b97e-0b8786773780",
+      "name": "Status: verworfen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        760
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { post_id: $('Status prüfen').first().json.post_id, status: 'verworfen' } }];\n"
+      }
+    },
+    {
+      "id": "b7fadd6b-e545-520f-9ae7-bcc49ccbd8a3",
+      "name": "Sheet: Post verworfen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        760
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "dd8ec67b-7019-509c-bc56-99e7aaf8eb7f",
+      "name": "Telegram: verworfen",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2200,
+        760
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "=❌ Post {{ $('Status prüfen').first().json.post_id }} verworfen.",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      }
+    },
+    {
+      "id": "762f75af-102f-5375-aee2-93ee4ec8c666",
+      "name": "Status: neu erzeugen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        560
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { post_id: $('Status prüfen').first().json.post_id, status: 'verworfen_neu' } }];\n"
+      }
+    },
+    {
+      "id": "7ebc31da-a7ff-59ac-9347-a696f4587ffa",
+      "name": "Sheet: Post ersetzt",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        560
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c15363f8-ddb9-5c71-9064-906de5f04a6d",
+      "name": "Idee zurücksetzen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        560
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { idee_id: $('Status prüfen').first().json.idee_id, status: 'neu' } }];\n"
+      }
+    },
+    {
+      "id": "e6f24357-1302-5a9c-b165-827bc9b3a483",
+      "name": "Sheet: Idee wieder neu",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2420,
+        560
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Ideen",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "idee_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ee07169d-47f3-5012-8d5d-d704a81e4568",
+      "name": "Telegram: wird neu erzeugt",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        560
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "=🔁 Idee wird beim nächsten Lauf von Workflow 02 neu erzeugt (oder Workflow 02 jetzt manuell starten).",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      }
+    },
+    {
+      "id": "f6dfa5a2-4eff-501b-bd46-3f40b327b0b7",
+      "name": "Status: wird veröffentlicht",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { post_id: $('Status prüfen').first().json.post_id, status: 'wird_veroeffentlicht' } }];\n"
+      }
+    },
+    {
+      "id": "b1c21e8c-7e9a-5cc6-a408-7b454c9bc230",
+      "name": "Sheet: Post sperren",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "07d5dd0b-92b7-5d92-8c3e-980ab6ce490b",
+      "name": "HeyGen-Video?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "eff1bcd4-bf7b-4022-a98e-0954021d632f",
+              "leftValue": "={{ $json.heygen_video_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "06b3db79-1105-5c11-bb93-21745e1ed975",
+      "name": "HeyGen: aktuelle Video-URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -100
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.heygen.com/v1/video_status.get",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "video_id",
+              "value": "={{ $('Status prüfen').first().json.heygen_video_id }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "52d9a3cf-17d0-54da-916a-f014ca99b404",
+      "name": "Medien-URL bereit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Status prüfen').first().json;\n    let media_url = p.media_url;\n    if (p.heygen_video_id) {\n      const d = $input.first().json.data || {};\n      media_url = d.video_url_caption || d.video_url || media_url;\n    }\n    return [{ json: { ...p, media_url } }];\n"
+      }
+    },
+    {
+      "id": "55835c27-7276-5221-9a51-efb323802757",
+      "name": "Instagram: Container anlegen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Konfiguration').first().json.ig_user_id }}/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Medien-URL bereit').first().json.ist_video ? { media_type: 'REELS', video_url: $('Medien-URL bereit').first().json.media_url, caption: $('Medien-URL bereit').first().json.caption_instagram, share_to_feed: true } : { image_url: $('Medien-URL bereit').first().json.media_url, caption: $('Medien-URL bereit').first().json.caption_instagram }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "2db41d67-ed57-5a32-a44a-36e465595c10",
+      "name": "Reel? (Verarbeitung abwarten)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "89d1037e-30cd-4eb9-a161-c271a5ea7359",
+              "leftValue": "={{ $('Medien-URL bereit').first().json.ist_video }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "5578fec8-8542-5528-87c7-0f3a40e065e3",
+      "name": "Reel: 30 s warten",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2200,
+        60
+      ],
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "webhookId": "c09df79a-a6c4-506c-af54-f3c09f6a7ad9"
+    },
+    {
+      "id": "2481452e-9211-54e0-8fbb-2d175bbc951a",
+      "name": "Instagram: Container-Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        60
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Instagram: Container anlegen').first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "status_code"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "2f75f7d9-9316-5957-a38e-3559ebbe0faf",
+      "name": "Container-Status auswerten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        60
+      ],
+      "parameters": {
+        "jsCode": "const s = $input.first().json.status_code;\nif (s === 'ERROR' || s === 'EXPIRED') throw new Error('Instagram-Verarbeitung fehlgeschlagen: ' + s);\nif ($runIndex > 30) throw new Error('Instagram verarbeitet das Reel seit über 15 Minuten (Status: ' + s + ').');\nreturn [{ json: { status_code: s } }];\n"
+      }
+    },
+    {
+      "id": "a571f766-b184-5aa4-83fd-f502a9eeeb8f",
+      "name": "Reel verarbeitet?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        60
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "063f10e7-41f6-4d2c-bdc4-97351b789c29",
+              "leftValue": "={{ $json.status_code }}",
+              "rightValue": "FINISHED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "1e849ed8-fb5a-5880-8951-36fc0a6536b5",
+      "name": "Instagram: veröffentlichen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3080,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Konfiguration').first().json.ig_user_id }}/media_publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $('Instagram: Container anlegen').first().json.id }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "37df3ec3-c829-5c6b-bf84-27ee5516c8b9",
+      "name": "Instagram: Permalink holen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3300,
+        200
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,permalink"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      }
+    },
+    {
+      "id": "31fa9b17-ef0c-5b56-b06f-cba7d127d307",
+      "name": "Facebook: posten",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3520,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Konfiguration').first().json.fb_page_id }}/{{ $('Medien-URL bereit').first().json.ist_video ? 'videos' : 'photos' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Medien-URL bereit').first().json.ist_video ? { file_url: $('Medien-URL bereit').first().json.media_url, description: $('Medien-URL bereit').first().json.text_facebook } : { url: $('Medien-URL bereit').first().json.media_url, message: $('Medien-URL bereit').first().json.text_facebook, published: true }) }}",
+        "options": {
+          "timeout": 300000
+        }
+      }
+    },
+    {
+      "id": "204d16ba-5833-5494-9e36-a6527eceaf2b",
+      "name": "Status: veröffentlicht",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const ig = $('Instagram: Permalink holen').first().json;\nconst fb = $input.first().json;\nreturn [{ json: {\n  post_id: $('Status prüfen').first().json.post_id,\n  status: 'veroeffentlicht',\n  ig_media_id: ig.id,\n  permalink: ig.permalink || '',\n  fb_post_id: fb.post_id || fb.id || '',\n  veroeffentlicht_am: new Date().toISOString(),\n  media_url: $('Medien-URL bereit').first().json.media_url,\n}}];\n"
+      }
+    },
+    {
+      "id": "749e3cba-a9d2-53e7-a8b9-c3052c06e0cb",
+      "name": "Sheet: Post veröffentlicht",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3960,
+        200
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Konfiguration').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "f14b64b0-b2ec-5b9b-b379-411a98083cd7",
+      "name": "Telegram: veröffentlicht",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4180,
+        200
+      ],
+      "parameters": {
+        "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
+        "text": "=✅ <b>Veröffentlicht</b> ({{ $('Status: veröffentlicht').first().json.post_id }})\nInstagram: {{ $('Status: veröffentlicht').first().json.permalink }}\nFacebook-ID: {{ $('Status: veröffentlicht').first().json.fb_post_id }}\nKommentar-Keyword aktiv: <b>{{ $('Status prüfen').first().json.keyword }}</b>",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      }
+    },
+    {
+      "id": "02000d8a-3e6e-59ac-9ed4-b77b254e7934",
+      "name": "Video für TikTok/YouTube?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "9af35e08-9297-4fb6-a3ca-5d308047f17d",
+              "leftValue": "={{ $('Status prüfen').first().json.ist_video && ($('Konfiguration').first().json.tiktok_aktiv || $('Konfiguration').first().json.youtube_aktiv) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "81f7aaec-140f-5c49-a19d-10ebb900ae5e",
+      "name": "Post-ID übergeben",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4620,
+        100
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { post_id: $('Status prüfen').first().json.post_id } }];\n"
+      }
+    },
+    {
+      "id": "411d6bba-6d20-59ef-878c-d5d457684980",
+      "name": "Workflow 07 starten",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        4840,
+        100
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "ID_VON_WORKFLOW_07",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "notes": "Nach dem Import: hier Workflow '07 Video-Plattformen' auswählen."
+    }
+  ],
+  "connections": {
+    "Telegram: Button geklickt": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Klick auswerten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Klick auswerten": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Klick bestätigen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram: Klick bestätigen": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Post laden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Post laden": {
+      "main": [
+        [
+          {
+            "node": "Status prüfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status prüfen": {
+      "main": [
+        [
+          {
+            "node": "Noch offen?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Noch offen?": {
+      "main": [
+        [
+          {
+            "node": "Aktion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram: schon erledigt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aktion": {
+      "main": [
+        [
+          {
+            "node": "Status: wird veröffentlicht",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Status: neu erzeugen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Status: verworfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status: verworfen": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Post verworfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Post verworfen": {
+      "main": [
+        [
+          {
+            "node": "Telegram: verworfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status: neu erzeugen": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Post ersetzt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Post ersetzt": {
+      "main": [
+        [
+          {
+            "node": "Idee zurücksetzen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Idee zurücksetzen": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Idee wieder neu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Idee wieder neu": {
+      "main": [
+        [
+          {
+            "node": "Telegram: wird neu erzeugt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status: wird veröffentlicht": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Post sperren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen-Video?": {
+      "main": [
+        [
+          {
+            "node": "HeyGen: aktuelle Video-URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Medien-URL bereit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HeyGen: aktuelle Video-URL": {
+      "main": [
+        [
+          {
+            "node": "Medien-URL bereit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Post sperren": {
+      "main": [
+        [
+          {
+            "node": "HeyGen-Video?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Medien-URL bereit": {
+      "main": [
+        [
+          {
+            "node": "Instagram: Container anlegen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram: Container anlegen": {
+      "main": [
+        [
+          {
+            "node": "Reel? (Verarbeitung abwarten)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reel? (Verarbeitung abwarten)": {
+      "main": [
+        [
+          {
+            "node": "Reel: 30 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Instagram: veröffentlichen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reel: 30 s warten": {
+      "main": [
+        [
+          {
+            "node": "Instagram: Container-Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram: Container-Status": {
+      "main": [
+        [
+          {
+            "node": "Container-Status auswerten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Container-Status auswerten": {
+      "main": [
+        [
+          {
+            "node": "Reel verarbeitet?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reel verarbeitet?": {
+      "main": [
+        [
+          {
+            "node": "Instagram: veröffentlichen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reel: 30 s warten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram: veröffentlichen": {
+      "main": [
+        [
+          {
+            "node": "Instagram: Permalink holen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram: Permalink holen": {
+      "main": [
+        [
+          {
+            "node": "Facebook: posten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook: posten": {
+      "main": [
+        [
+          {
+            "node": "Status: veröffentlicht",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status: veröffentlicht": {
+      "main": [
+        [
+          {
+            "node": "Sheet: Post veröffentlicht",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet: Post veröffentlicht": {
+      "main": [
+        [
+          {
+            "node": "Telegram: veröffentlicht",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram: veröffentlicht": {
+      "main": [
+        [
+          {
+            "node": "Video für TikTok/YouTube?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video für TikTok/YouTube?": {
+      "main": [
+        [
+          {
+            "node": "Post-ID übergeben",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-ID übergeben": {
+      "main": [
+        [
+          {
+            "node": "Workflow 07 starten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin"
+  },
+  "pinData": {},
+  "active": false
+}
