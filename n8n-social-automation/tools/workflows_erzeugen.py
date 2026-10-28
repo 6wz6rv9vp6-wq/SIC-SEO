@@ -317,7 +317,7 @@ return [{
         ig_user_id: 'INSTAGRAM_ID_ZWEITPROFIL',
         fb_page_id: '',                    // nur Instagram
         posting_plan: ['Di 07', 'Do 07'],  // nicht dieselbe Stunde wie ein anderes Profil
-        schwerpunkt: 'HIER EINTRAGEN: z. B. Immobilienwissen, Kapitalanlage, Tipps rund um Kauf & Finanzierung',
+        schwerpunkt: 'gleiche Themen wie das Hauptprofil, aber eigener Blickwinkel, eigene Hooks und eigene Formulierungen',
         // zielgruppe: '…', ansprache: 'du', ton: '…',
       },
     },
@@ -502,7 +502,7 @@ const system = `Du bist Content-Stratege für ${c.firma} (${c.leistung}), Region
 Aus Rechercheergebnissen leitest du ab, was Kunden bewegt, was Mitbewerber tun und wo Content-Lücken sind.
 Erzeuge daraus konkrete Post-Ideen für diese Social-Media-Profile (Feld "profil" = Profil-Schlüssel):
 ${profilText}
-Jedes Profil bekommt eigene Themen passend zu seinem Schwerpunkt – keine Themen doppelt zwischen den Profilen. Mix je Profil: ca. 2/3 bild, 1/3 video.
+Die Profile dürfen ähnliche Themen behandeln, aber nie dieselbe Idee: anderer Blickwinkel, anderer Hook, eigene Formulierungen. Mix je Profil: ca. 2/3 bild, 1/3 video.
 Jede Idee braucht einen Leadmagneten (kurzer Guide/Checkliste als Gamma-Dokument) und GENAU eines dieser Keywords:
 ${Object.entries(c.keywords).map(([k, v]) => k + ' = ' + v).join('\\n')}
 Wähle das Keyword, das inhaltlich zum Leadmagneten passt. Leadmagnet-Titel darf spezifischer sein als die Keyword-Beschreibung.

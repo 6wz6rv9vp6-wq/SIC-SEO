@@ -28,7 +28,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n\n    // ---- Hauptprofil (Instagram + Facebook) ----\n    profil_name: 'Smart Immo Concept',\n    instagram_handle: '@HANDLE_HAUPTPROFIL',\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',        // leer lassen = nur Instagram\n    posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],   // Wochentag + Uhrzeit (Stunde), zu der ein Entwurf erstellt wird\n    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis',\n    schwerpunkt: '',                       // optional: inhaltlicher Fokus dieses Profils\n\n    // ---- Weitere Instagram-Profile ----\n    // Nur Werte eintragen, die vom Hauptprofil abweichen. Alles andere (Firma, Keywords, Termin-Link …) wird übernommen.\n    // Ein Profil ist aktiv, sobald eine echte ig_user_id eingetragen ist.\n    weitere_profile: {\n      zweitprofil: {\n        profil_name: 'Smart Immo Concept (Zweitprofil)',\n        instagram_handle: '@HANDLE_ZWEITPROFIL',\n        ig_user_id: 'INSTAGRAM_ID_ZWEITPROFIL',\n        fb_page_id: '',                    // nur Instagram\n        posting_plan: ['Di 07', 'Do 07'],  // nicht dieselbe Stunde wie ein anderes Profil\n        schwerpunkt: 'HIER EINTRAGEN: z. B. Immobilienwissen, Kapitalanlage, Tipps rund um Kauf & Finanzierung',\n        // zielgruppe: '…', ansprache: 'du', ton: '…',\n      },\n    },\n    test_profil: 'haupt',                  // welches Profil ein manueller Test von Workflow 02 nimmt\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    // Videoquelle für Video-Posts\n    video_quelle: 'heygen',                // 'heygen' = dein Avatar spricht den Text, 'fal' = KI-B-Roll ohne Ton\n    heygen_avatar_typ: 'avatar',           // 'avatar' (Studio-/Instant-Avatar) oder 'talking_photo' (Foto-Avatar)\n    heygen_avatar_id: '',                  // ID deines Avatars (bzw. talking_photo_id)\n    heygen_voice_id: '',                   // ID deiner (geklonten) Stimme\n    heygen_avatar_style: 'normal',\n    heygen_hintergrund: '#F4F1EC',         // Farbe ODER Bild-URL (https://...)\n    heygen_untertitel: true,               // Untertitel ins Video brennen (wichtig: viele schauen ohne Ton)\n    heygen_test: false,                    // true = kostenloses Testvideo mit Wasserzeichen\n    ki_hinweis: '🤖 Video mit KI-Avatar erstellt.',  // Transparenzhinweis (EU AI Act Art. 50), wird bei HeyGen-Videos angehängt\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n\n    // ---- Hauptprofil (Instagram + Facebook) ----\n    profil_name: 'Smart Immo Concept',\n    instagram_handle: '@HANDLE_HAUPTPROFIL',\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',        // leer lassen = nur Instagram\n    posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],   // Wochentag + Uhrzeit (Stunde), zu der ein Entwurf erstellt wird\n    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis',\n    schwerpunkt: '',                       // optional: inhaltlicher Fokus dieses Profils\n\n    // ---- Weitere Instagram-Profile ----\n    // Nur Werte eintragen, die vom Hauptprofil abweichen. Alles andere (Firma, Keywords, Termin-Link …) wird übernommen.\n    // Ein Profil ist aktiv, sobald eine echte ig_user_id eingetragen ist.\n    weitere_profile: {\n      zweitprofil: {\n        profil_name: 'Smart Immo Concept (Zweitprofil)',\n        instagram_handle: '@HANDLE_ZWEITPROFIL',\n        ig_user_id: 'INSTAGRAM_ID_ZWEITPROFIL',\n        fb_page_id: '',                    // nur Instagram\n        posting_plan: ['Di 07', 'Do 07'],  // nicht dieselbe Stunde wie ein anderes Profil\n        schwerpunkt: 'gleiche Themen wie das Hauptprofil, aber eigener Blickwinkel, eigene Hooks und eigene Formulierungen',\n        // zielgruppe: '…', ansprache: 'du', ton: '…',\n      },\n    },\n    test_profil: 'haupt',                  // welches Profil ein manueller Test von Workflow 02 nimmt\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    // Videoquelle für Video-Posts\n    video_quelle: 'heygen',                // 'heygen' = dein Avatar spricht den Text, 'fal' = KI-B-Roll ohne Ton\n    heygen_avatar_typ: 'avatar',           // 'avatar' (Studio-/Instant-Avatar) oder 'talking_photo' (Foto-Avatar)\n    heygen_avatar_id: '',                  // ID deines Avatars (bzw. talking_photo_id)\n    heygen_voice_id: '',                   // ID deiner (geklonten) Stimme\n    heygen_avatar_style: 'normal',\n    heygen_hintergrund: '#F4F1EC',         // Farbe ODER Bild-URL (https://...)\n    heygen_untertitel: true,               // Untertitel ins Video brennen (wichtig: viele schauen ohne Ton)\n    heygen_test: false,                    // true = kostenloses Testvideo mit Wasserzeichen\n    ki_hinweis: '🤖 Video mit KI-Avatar erstellt.',  // Transparenzhinweis (EU AI Act Art. 50), wird bei HeyGen-Videos angehängt\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
       }
     },
     {
@@ -126,7 +126,7 @@
           },
           "conditions": [
             {
-              "id": "5dea9e64-65e6-40ec-9eb6-6efb2717cede",
+              "id": "f9022443-ecd1-496e-a117-6bcf13547907",
               "leftValue": "={{ $json.offen }}",
               "rightValue": "",
               "operator": {
@@ -182,7 +182,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "6fb33269-dafb-4687-869e-f77478668b11",
+                    "id": "5af73ce4-f6bb-443a-ad08-19d590c4e502",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "ok",
                     "operator": {
@@ -206,7 +206,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "5d8792c0-8a12-4a2b-ade1-b64ee8b728a5",
+                    "id": "7d64d208-1f8b-4118-a324-5bf57647e003",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "neu",
                     "operator": {
@@ -230,7 +230,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "95949952-1146-4c39-85fd-f4f9c13df007",
+                    "id": "fef1a21c-b528-4422-8c9a-421bcef89916",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "nein",
                     "operator": {
@@ -486,7 +486,7 @@
           },
           "conditions": [
             {
-              "id": "2955aac0-e523-4739-bb81-a3292a508509",
+              "id": "b1d03b70-2d0a-403a-8949-7d5027347b3b",
               "leftValue": "={{ $json.heygen_video_id }}",
               "rightValue": "",
               "operator": {
@@ -583,7 +583,7 @@
           },
           "conditions": [
             {
-              "id": "b8f91cda-1307-4f7b-a318-3baa4a73df71",
+              "id": "4f78488f-a6f6-40f6-8f1b-f104c758088c",
               "leftValue": "={{ $('Medien-URL bereit').first().json.ist_video }}",
               "rightValue": "",
               "operator": {
@@ -673,7 +673,7 @@
           },
           "conditions": [
             {
-              "id": "c01b13bf-679f-4053-9d20-42078377a645",
+              "id": "43983deb-9765-4403-8c84-4eb2893868f5",
               "leftValue": "={{ $json.status_code }}",
               "rightValue": "FINISHED",
               "operator": {
@@ -848,7 +848,7 @@
           },
           "conditions": [
             {
-              "id": "3bcb6c70-1200-4c9e-b83d-5bd4923d6017",
+              "id": "7508480c-2d82-4fdc-8854-fe1e6d1e909c",
               "leftValue": "={{ $('Status prüfen').first().json.fb_page_id }}",
               "rightValue": "",
               "operator": {
@@ -882,7 +882,7 @@
           },
           "conditions": [
             {
-              "id": "16c8338d-722a-4ad8-9092-c65044df5d5f",
+              "id": "49aef1e1-c935-4d6e-a8a5-9bb14f4461a6",
               "leftValue": "={{ $('Status prüfen').first().json.ist_video && ($('Konfiguration').first().json.tiktok_aktiv || $('Konfiguration').first().json.youtube_aktiv) }}",
               "rightValue": "",
               "operator": {
