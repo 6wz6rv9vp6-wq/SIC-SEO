@@ -28,7 +28,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n\n    // ---- Hauptprofil (Instagram + Facebook) ----\n    profil_name: 'Smart Immo Concept',\n    instagram_handle: '@HANDLE_HAUPTPROFIL',\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',        // leer lassen = nur Instagram\n    posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],   // Wochentag + Uhrzeit (Stunde), zu der ein Entwurf erstellt wird\n    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis',\n    schwerpunkt: '',                       // optional: inhaltlicher Fokus dieses Profils\n\n    // ---- Weitere Instagram-Profile ----\n    // Nur Werte eintragen, die vom Hauptprofil abweichen. Alles andere (Firma, Keywords, Termin-Link …) wird übernommen.\n    // Ein Profil ist aktiv, sobald eine echte ig_user_id eingetragen ist.\n    weitere_profile: {\n      zweitprofil: {\n        profil_name: 'Smart Immo Concept (Zweitprofil)',\n        instagram_handle: '@HANDLE_ZWEITPROFIL',\n        ig_user_id: 'INSTAGRAM_ID_ZWEITPROFIL',\n        fb_page_id: '',                    // nur Instagram\n        posting_plan: ['Di 07', 'Do 07'],  // nicht dieselbe Stunde wie ein anderes Profil\n        schwerpunkt: 'HIER EINTRAGEN: z. B. Immobilienwissen, Kapitalanlage, Tipps rund um Kauf & Finanzierung',\n        // zielgruppe: '…', ansprache: 'du', ton: '…',\n      },\n    },\n    test_profil: 'haupt',                  // welches Profil ein manueller Test von Workflow 02 nimmt\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
       }
     },
     {
@@ -104,7 +104,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const k = $('Klick auswerten').first().json;\nconst p = $input.all()[0]?.json;\nif (!p || !p.post_id) throw new Error('Post nicht gefunden: ' + k.post_id);\nconst offen = p.status === 'wartet_auf_freigabe';\nreturn [{ json: { ...p, aktion: k.aktion, offen, ist_video: p.format === 'video' } }];\n"
+        "jsCode": "const k = $('Klick auswerten').first().json;\nconst p = $input.all()[0]?.json;\nif (!p || !p.post_id) throw new Error('Post nicht gefunden: ' + k.post_id);\nconst offen = p.status === 'wartet_auf_freigabe';\n\n// Profil-Daten: Hauptprofil = Grundeinstellungen; weitere Profile überschreiben nur abweichende Werte\nconst profilDaten = (c, key) => {\n  const basis = { profil_name: c.firma, instagram_handle: '', posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],\n    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis', schwerpunkt: '', ...c };\n  const extra = (c.weitere_profile || {})[key];\n  return extra ? { ...basis, ...extra, key } : { ...basis, key: 'haupt' };\n};\nconst aktiveProfile = c => ['haupt', ...Object.keys(c.weitere_profile || {})].map(k => profilDaten(c, k))\n  .filter(p => p.aktiv !== false && p.ig_user_id && !String(p.ig_user_id).startsWith('INSTAGRAM_'));\n\nconst pd = profilDaten($('Konfiguration').first().json, p.profil || 'haupt');\nreturn [{ json: { ...p, aktion: k.aktion, offen, ist_video: p.format === 'video',\n  profil_name: pd.profil_name, ig_user_id: pd.ig_user_id, fb_page_id: pd.fb_page_id || '' } }];\n"
       }
     },
     {
@@ -126,7 +126,7 @@
           },
           "conditions": [
             {
-              "id": "74323507-e3f2-40f2-b165-ed90c3dad58b",
+              "id": "dd1a3caf-02f8-4a70-adc8-60d5b32eb969",
               "leftValue": "={{ $json.offen }}",
               "rightValue": "",
               "operator": {
@@ -182,7 +182,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "a8a2a58e-5556-4b8b-8d58-cb9dbebbb15b",
+                    "id": "9493a96a-c2b5-46b4-a31a-df9de5fe998b",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "ok",
                     "operator": {
@@ -206,7 +206,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "4352130d-211f-4ea1-a39d-118fbe11a0e8",
+                    "id": "06d139d8-e270-4f4c-a5d4-6efb6ab6f990",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "neu",
                     "operator": {
@@ -230,7 +230,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "187c6f6a-761a-46af-b523-8339635f81d8",
+                    "id": "6beaf17b-0fbb-47ca-95e6-b2aaa614d98b",
                     "leftValue": "={{ $json.aktion }}",
                     "rightValue": "nein",
                     "operator": {
@@ -491,7 +491,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Konfiguration').first().json.ig_user_id }}/media",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Status prüfen').first().json.ig_user_id }}/media",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpQueryAuth",
         "sendBody": true,
@@ -521,7 +521,7 @@
           },
           "conditions": [
             {
-              "id": "bf2a6950-8fc6-4cc7-9940-efd9e27c44d4",
+              "id": "440478b9-6ba7-4b15-9b6b-558c1222b9cc",
               "leftValue": "={{ $('Medien-URL bereit').first().json.ist_video }}",
               "rightValue": "",
               "operator": {
@@ -611,7 +611,7 @@
           },
           "conditions": [
             {
-              "id": "b15c9e81-1da3-412e-a62c-d3811fe2cf38",
+              "id": "6e552607-4c88-490e-b159-0971a85365ae",
               "leftValue": "={{ $json.status_code }}",
               "rightValue": "FINISHED",
               "operator": {
@@ -636,7 +636,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Konfiguration').first().json.ig_user_id }}/media_publish",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Status prüfen').first().json.ig_user_id }}/media_publish",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpQueryAuth",
         "sendQuery": true,
@@ -692,7 +692,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Konfiguration').first().json.fb_page_id }}/{{ $('Medien-URL bereit').first().json.ist_video ? 'videos' : 'photos' }}",
+        "url": "=https://graph.facebook.com/{{ $('Konfiguration').first().json.graph_version }}/{{ $('Status prüfen').first().json.fb_page_id }}/{{ $('Medien-URL bereit').first().json.ist_video ? 'videos' : 'photos' }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpQueryAuth",
         "sendBody": true,
@@ -713,7 +713,7 @@
         200
       ],
       "parameters": {
-        "jsCode": "const ig = $('Instagram: Permalink holen').first().json;\nconst fb = $input.first().json;\nreturn [{ json: {\n  post_id: $('Status prüfen').first().json.post_id,\n  status: 'veroeffentlicht',\n  ig_media_id: ig.id,\n  permalink: ig.permalink || '',\n  fb_post_id: fb.post_id || fb.id || '',\n  veroeffentlicht_am: new Date().toISOString(),\n  media_url: $('Medien-URL bereit').first().json.media_url,\n}}];\n"
+        "jsCode": "const ig = $('Instagram: Permalink holen').first().json;\nconst fb = $('Facebook: posten').isExecuted ? $('Facebook: posten').first().json : {};\nreturn [{ json: {\n  post_id: $('Status prüfen').first().json.post_id,\n  status: 'veroeffentlicht',\n  ig_media_id: ig.id,\n  permalink: ig.permalink || '',\n  fb_post_id: fb.post_id || fb.id || '',\n  veroeffentlicht_am: new Date().toISOString(),\n  media_url: $('Medien-URL bereit').first().json.media_url,\n}}];\n"
       }
     },
     {
@@ -759,12 +759,46 @@
       ],
       "parameters": {
         "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
-        "text": "=✅ <b>Veröffentlicht</b> ({{ $('Status: veröffentlicht').first().json.post_id }})\nInstagram: {{ $('Status: veröffentlicht').first().json.permalink }}\nFacebook-ID: {{ $('Status: veröffentlicht').first().json.fb_post_id }}\nKommentar-Keyword aktiv: <b>{{ $('Status prüfen').first().json.keyword }}</b>",
+        "text": "=✅ <b>Veröffentlicht</b> auf {{ $('Status prüfen').first().json.profil_name }} ({{ $('Status: veröffentlicht').first().json.post_id }})\nInstagram: {{ $('Status: veröffentlicht').first().json.permalink }}\n{{ $('Status: veröffentlicht').first().json.fb_post_id ? 'Facebook-ID: ' + $('Status: veröffentlicht').first().json.fb_post_id + '\\n' : '' }}Kommentar-Keyword aktiv: <b>{{ $('Status prüfen').first().json.keyword }}</b>",
         "additionalFields": {
           "parse_mode": "HTML",
           "appendAttribution": false,
           "disable_web_page_preview": true
         }
+      }
+    },
+    {
+      "id": "eba8977b-98a7-5835-ae11-494286a8e43b",
+      "name": "Facebook-Seite?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3410,
+        340
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "b4e5e708-ca43-4787-807b-00811a0c5800",
+              "leftValue": "={{ $('Status prüfen').first().json.fb_page_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       }
     }
   ],
@@ -1072,7 +1106,25 @@
       "main": [
         [
           {
+            "node": "Facebook-Seite?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook-Seite?": {
+      "main": [
+        [
+          {
             "node": "Facebook: posten",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Status: veröffentlicht",
             "type": "main",
             "index": 0
           }

@@ -2,8 +2,8 @@
   "name": "02 Content-Generierung – Post, Medien & Gamma-Leadmagnet",
   "nodes": [
     {
-      "id": "ee48d29c-599d-5f42-a7c4-694f3f5db0f3",
-      "name": "Mo/Mi/Fr 07:00",
+      "id": "6762fe97-74a0-50ea-872a-2e7a6fe204f9",
+      "name": "Stündlich 06–20 Uhr",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -15,7 +15,7 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "0 7 * * 1,3,5"
+              "expression": "0 6-20 * * *"
             }
           ]
         }
@@ -31,7 +31,20 @@
         300
       ],
       "parameters": {
-        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    // Videoquelle für Video-Posts\n    video_quelle: 'heygen',                // 'heygen' = dein Avatar spricht den Text, 'fal' = KI-B-Roll ohne Ton\n    heygen_avatar_typ: 'avatar',           // 'avatar' (Studio-/Instant-Avatar) oder 'talking_photo' (Foto-Avatar)\n    heygen_avatar_id: '',                  // ID deines Avatars (bzw. talking_photo_id)\n    heygen_voice_id: '',                   // ID deiner (geklonten) Stimme\n    heygen_avatar_style: 'normal',\n    heygen_hintergrund: '#F4F1EC',         // Farbe ODER Bild-URL (https://...)\n    heygen_untertitel: true,               // Untertitel ins Video brennen (wichtig: viele schauen ohne Ton)\n    heygen_test: false,                    // true = kostenloses Testvideo mit Wasserzeichen\n    ki_hinweis: '🤖 Video mit KI-Avatar erstellt.',  // Transparenzhinweis (EU AI Act Art. 50), wird bei HeyGen-Videos angehängt\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+        "jsCode": "// >>> HIER ANPASSEN <<<  (gleiche Werte in allen Workflows eintragen)\nreturn [{\n  json: {\n    firma: 'Smart Immo Concept',\n    ansprechpartner: 'Kai Weber',\n    leistung: 'unabhängige Baufinanzierungs-Vermittlung (Vergleich vieler Banken), Anschlussfinanzierung, Förderberatung (KfW/Landesprogramme)',\n    region: 'Braunschweig, Göttingen und bundesweit per Video-Beratung',\n    zielgruppe: 'Erstkäufer und junge Familien (28–45), Anschlussfinanzierer, Kapitalanleger',\n    ansprache: 'du',                       // 'du' oder 'Sie'\n    website: 'https://www.smart-immo-concept.de',   // anpassen\n    termin_link: 'https://meetergo.com/...',        // Meetergo-Buchungslink eintragen\n\n    // Feste Kommentar-Keywords. Für JEDES Keyword legst du EINMAL eine ManyChat-Automation an.\n    // Claude darf nur diese Keywords verwenden.\n    keywords: {\n      CHECKLISTE: 'Checkliste: Unterlagen & Ablauf der Baufinanzierung',\n      FOERDERUNG: 'Guide: Förderprogramme (KfW & Land) für Käufer',\n      EIGENKAPITAL: 'Guide: Mit wenig Eigenkapital zur eigenen Immobilie',\n      ANSCHLUSS: 'Guide: Anschlussfinanzierung richtig planen',\n      KAUFNEBENKOSTEN: 'Übersicht: Kaufnebenkosten & versteckte Kosten',\n    },\n    // Fallback-Links je Keyword (z. B. ein fester Gamma-Guide), falls noch kein Post existiert\n    keyword_fallback_url: {},\n    // Geheimnis für den Lead-Webhook (Workflow 05): an die Webhook-URL als ?token=... anhängen\n    webhook_token: 'LANGES_ZUFAELLIGES_GEHEIMNIS',\n\n    mitbewerber: [\n      // { name: 'Beispiel Finanz GmbH', website: 'https://...', instagram: 'https://www.instagram.com/beispiel/', fb_page_id: '1234567890' },\n    ],\n\n    sheet_id: 'GOOGLE_SHEET_ID_HIER',\n    telegram_chat_id: 'TELEGRAM_CHAT_ID_HIER',\n    erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft\n\n    graph_version: 'v24.0',                // Meta Graph API Version\n\n    // ---- Hauptprofil (Instagram + Facebook) ----\n    profil_name: 'Smart Immo Concept',\n    instagram_handle: '@HANDLE_HAUPTPROFIL',\n    ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',\n    fb_page_id: 'FACEBOOK_PAGE_ID',        // leer lassen = nur Instagram\n    posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],   // Wochentag + Uhrzeit (Stunde), zu der ein Entwurf erstellt wird\n    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis',\n    schwerpunkt: '',                       // optional: inhaltlicher Fokus dieses Profils\n\n    // ---- Weitere Instagram-Profile ----\n    // Nur Werte eintragen, die vom Hauptprofil abweichen. Alles andere (Firma, Keywords, Termin-Link …) wird übernommen.\n    // Ein Profil ist aktiv, sobald eine echte ig_user_id eingetragen ist.\n    weitere_profile: {\n      zweitprofil: {\n        profil_name: 'Smart Immo Concept (Zweitprofil)',\n        instagram_handle: '@HANDLE_ZWEITPROFIL',\n        ig_user_id: 'INSTAGRAM_ID_ZWEITPROFIL',\n        fb_page_id: '',                    // nur Instagram\n        posting_plan: ['Di 07', 'Do 07'],  // nicht dieselbe Stunde wie ein anderes Profil\n        schwerpunkt: 'HIER EINTRAGEN: z. B. Immobilienwissen, Kapitalanlage, Tipps rund um Kauf & Finanzierung',\n        // zielgruppe: '…', ansprache: 'du', ton: '…',\n      },\n    },\n    test_profil: 'haupt',                  // welches Profil ein manueller Test von Workflow 02 nimmt\n\n    fal_image_model: 'fal-ai/flux-pro/v1.1',\n    fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',\n    video_dauer: '10',                     // nur fal.ai: Sekunden ('5' oder '10')\n\n    // Videoquelle für Video-Posts\n    video_quelle: 'heygen',                // 'heygen' = dein Avatar spricht den Text, 'fal' = KI-B-Roll ohne Ton\n    heygen_avatar_typ: 'avatar',           // 'avatar' (Studio-/Instant-Avatar) oder 'talking_photo' (Foto-Avatar)\n    heygen_avatar_id: '',                  // ID deines Avatars (bzw. talking_photo_id)\n    heygen_voice_id: '',                   // ID deiner (geklonten) Stimme\n    heygen_avatar_style: 'normal',\n    heygen_hintergrund: '#F4F1EC',         // Farbe ODER Bild-URL (https://...)\n    heygen_untertitel: true,               // Untertitel ins Video brennen (wichtig: viele schauen ohne Ton)\n    heygen_test: false,                    // true = kostenloses Testvideo mit Wasserzeichen\n    ki_hinweis: '🤖 Video mit KI-Avatar erstellt.',  // Transparenzhinweis (EU AI Act Art. 50), wird bei HeyGen-Videos angehängt\n\n    // TikTok & YouTube Shorts (nur Video-Posts) – siehe README Abschnitt \"TikTok & YouTube\"\n    n8n_url: 'https://n8n.deine-domain.de',  // ohne / am Ende; für Guide-Links und TikTok-Login\n    youtube_aktiv: false,\n    youtube_privacy: 'public',             // bis zum Google-API-Audit bleiben Uploads trotzdem privat\n    youtube_kategorie: '27',               // 27 = Bildung, 22 = Menschen & Blogs\n    tiktok_aktiv: false,\n    tiktok_modus: 'entwurf',               // 'entwurf' = Video landet in deiner TikTok-Inbox, du veröffentlichst in der App\n                                           // 'direkt'  = sofort posten (öffentlich erst nach TikTok-App-Audit)\n    tiktok_client_key: '',\n    tiktok_client_secret: '',\n    gamma_theme_id: '',                    // optional: Gamma Theme-ID für dein Branding\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "a9f51ba5-29b4-5a19-bca2-e2aecd56752a",
+      "name": "Profil für diese Stunde",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        330,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\n\n// Profil-Daten: Hauptprofil = Grundeinstellungen; weitere Profile überschreiben nur abweichende Werte\nconst profilDaten = (c, key) => {\n  const basis = { profil_name: c.firma, instagram_handle: '', posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],\n    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis', schwerpunkt: '', ...c };\n  const extra = (c.weitere_profile || {})[key];\n  return extra ? { ...basis, ...extra, key } : { ...basis, key: 'haupt' };\n};\nconst aktiveProfile = c => ['haupt', ...Object.keys(c.weitere_profile || {})].map(k => profilDaten(c, k))\n  .filter(p => p.aktiv !== false && p.ig_user_id && !String(p.ig_user_id).startsWith('INSTAGRAM_'));\n\n// Welches Profil ist laut posting_plan jetzt dran? (z. B. 'Mo 07')\nconst jetzt = $now.setZone('Europe/Berlin');\nconst tage = ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];\nconst slot = tage[jetzt.weekday] + ' ' + String(jetzt.hour).padStart(2, '0');\nconst norm = s => { const [d, h] = String(s).trim().split(/\\s+/); return d + ' ' + String(parseInt(h, 10)).padStart(2, '0'); };\nconst profil = $execution.mode === 'test'\n  ? profilDaten(c, c.test_profil || 'haupt')          // manueller Test: immer ein Profil\n  : aktiveProfile(c).find(p => p.posting_plan.map(norm).includes(slot));\nif (!profil) return [];                               // in dieser Stunde ist kein Profil dran\nreturn [{ json: { profil: profil.key, profil_name: profil.profil_name, slot } }];\n"
       }
     },
     {
@@ -70,14 +83,14 @@
     {
       "id": "c2cc0d5e-c1de-582f-b91b-4c59177abb3c",
       "name": "Nächste Idee",
-      "type": "n8n-nodes-base.limit",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         660,
         300
       ],
       "parameters": {
-        "maxItems": 1
+        "jsCode": "// Erste offene Idee für das Profil (Ideen ohne Profil-Angabe gehören zum Hauptprofil)\nconst pr = $('Profil für diese Stunde').first().json.profil;\nconst idee = $input.all().map(i => i.json).find(i => i.idee_id && (i.profil || 'haupt') === pr);\nreturn [{ json: idee || {} }];\n"
       }
     },
     {
@@ -99,7 +112,7 @@
           },
           "conditions": [
             {
-              "id": "32befa65-53b4-4e7a-a793-30739b6c66a8",
+              "id": "74e7732c-4d97-49c9-a315-4dcacceebd39",
               "leftValue": "={{ $json.idee_id }}",
               "rightValue": "",
               "operator": {
@@ -125,7 +138,7 @@
       ],
       "parameters": {
         "chatId": "={{ $('Konfiguration').first().json.telegram_chat_id }}",
-        "text": "=💡 Keine neuen Post-Ideen mehr im Sheet. Starte Workflow 01 (Recherche) manuell oder trag eigene Ideen im Tab <b>Ideen</b> mit Status <b>neu</b> ein.",
+        "text": "=💡 Keine neuen Post-Ideen für <b>{{ $('Profil für diese Stunde').first().json.profil_name }}</b>. Starte Workflow 01 (Recherche) manuell oder trag eigene Ideen im Tab <b>Ideen</b> mit Status <b>neu</b> ein.",
         "additionalFields": {
           "parse_mode": "HTML",
           "appendAttribution": false,
@@ -143,7 +156,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const c = $('Konfiguration').first().json;\nconst i = $input.first().json;\nconst kwText = c.keywords[i.keyword] || i.leadmagnet_titel;\nconst system = `Du schreibst Social-Media-Posts für ${c.firma} (${c.ansprechpartner}), ${c.leistung}. Region: ${c.region}.\nZielgruppe: ${c.zielgruppe}. Ansprache: \"${c.ansprache}\". Ton: nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis.\nAufbau Instagram-Caption: starker Hook in Zeile 1 → 3–6 kurze Absätze mit echtem Mehrwert → Call-to-Action:\n\"Kommentiere ${i.keyword} und ich schicke dir ${kwText} kostenlos per DM.\" (max. 2.000 Zeichen, ohne Hashtags).\nFacebook-Text: gleiche Botschaft, etwas ausführlicher, gleicher CTA mit Keyword ${i.keyword}, zusätzlich Hinweis auf Terminbuchung: ${c.termin_link}.\nhashtags: 8–12 passende deutsche Hashtags inkl. regionaler (#braunschweig #göttingen), als ein String.\nbild_prompt: ENGLISCHER Prompt für ein fotorealistisches Bild im Hochformat 4:5, authentisch, keine Schrift/Logos/Zahlen im Bild, keine erkennbaren realen Personen.\nvideo_prompt: ENGLISCHER Prompt für einen 5–10 s Clip im Hochformat 9:16 (B-Roll, ruhige Kamerafahrt), ohne Schrift im Bild.\nalt_text: deutsche Bildbeschreibung (Barrierefreiheit).\nleadmagnet_inhalt: ausführliche Gliederung + Inhalte (Markdown) für den Leadmagneten \"${i.leadmagnet_titel}\" – 6–8 Abschnitte, praxisnah, mit Checklisten. Letzter Abschnitt: Einladung zum kostenlosen Beratungsgespräch (${c.termin_link}).\ntext_tiktok: kurze TikTok-Caption (max. 300 Zeichen): Hook, 1–2 Sätze Mehrwert, CTA \"Gratis-Guide über den Link in meiner Bio\", 3–5 Hashtags.\nyoutube_titel: Titel für YouTube Shorts, max. 80 Zeichen, neugierig machend, ohne Clickbait, ohne Hashtags.\nyoutube_beschreibung: 2–4 Sätze Beschreibung für YouTube Shorts mit Mehrwert, OHNE Links (Links werden automatisch angehängt), am Ende 3–5 Hashtags inkl. #Shorts.\nsprechertext: Text, den ${c.ansprechpartner} als Avatar in einem Hochkant-Video spricht (nur bei Format video, sonst leerer String). Ich-Form, gesprochene Sprache, Ansprache \"${c.ansprache}\".\n  Länge 30–45 Sekunden (ca. 80–120 Wörter). Satz 1 = Hook (max. 10 Wörter), dann 2–3 konkrete Punkte, dann CTA: \"Schreib ${i.keyword} in die Kommentare – oder hol dir den Guide über den Link.\" (bei Ansprache \"Sie\" entsprechend formulieren).\n  Für Text-to-Speech schreiben: keine Abkürzungen (z. B. \"zum Beispiel\", \"Prozent\", \"Euro\"), keine Emojis, keine Hashtags, keine Klammern, Zahlen als Ziffern nur wenn eindeutig sprechbar.\n\nRechtliche Leitplanken (verbindlich, Werbung für Immobiliar-Verbraucherdarlehen in Deutschland):\\n- Nenne KEINE konkreten Zinssätze, Raten oder Effektivzinsen (sonst Pflichtangaben + repräsentatives Beispiel nach § 17 PAngV nötig).\\n- Keine Heilsversprechen oder Superlative (\\\"garantiert\\\", \\\"beste Konditionen\\\", \\\"immer\\\", \\\"sicher genehmigt\\\").\\n- Keine individuelle Beratung im Post – allgemeine Information, Beratung nur im Gespräch.\\n- Keine falschen Fakten zu Förderprogrammen; wenn unsicher, allgemein bleiben (\\\"aktuelle Förderprogramme prüfen\\\").\\n- Keine Mitbewerber namentlich nennen oder abwerten.`;\nconst user = `Post-Idee:\\nTitel: ${i.titel}\\nHook: ${i.hook}\\nKernaussage: ${i.kernaussage}\\nFormat: ${i.format}\\nLeadmagnet: ${i.leadmagnet_titel} – ${i.leadmagnet_beschreibung}\\nKeyword: ${i.keyword}`;\nreturn [{ json: { idee: i, claude_body: {\n  model: 'claude-opus-5-5',\n  max_tokens: 16000,\n  fallbacks: 'default',\n  output_config: { effort: 'medium', format: { type: 'json_schema', schema: {\"type\": \"object\", \"properties\": {\"caption_instagram\": {\"type\": \"string\"}, \"text_facebook\": {\"type\": \"string\"}, \"hashtags\": {\"type\": \"string\"}, \"bild_prompt\": {\"type\": \"string\"}, \"video_prompt\": {\"type\": \"string\"}, \"alt_text\": {\"type\": \"string\"}, \"leadmagnet_inhalt\": {\"type\": \"string\"}, \"text_tiktok\": {\"type\": \"string\"}, \"youtube_titel\": {\"type\": \"string\"}, \"youtube_beschreibung\": {\"type\": \"string\"}, \"sprechertext\": {\"type\": \"string\"}}, \"required\": [\"caption_instagram\", \"text_facebook\", \"hashtags\", \"bild_prompt\", \"video_prompt\", \"alt_text\", \"leadmagnet_inhalt\", \"text_tiktok\", \"youtube_titel\", \"youtube_beschreibung\", \"sprechertext\"], \"additionalProperties\": false} } },\n  system,\n  messages: [{ role: 'user', content: user }],\n}}}];\n"
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst i = $input.first().json;\n\n// Profil-Daten: Hauptprofil = Grundeinstellungen; weitere Profile überschreiben nur abweichende Werte\nconst profilDaten = (c, key) => {\n  const basis = { profil_name: c.firma, instagram_handle: '', posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],\n    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis', schwerpunkt: '', ...c };\n  const extra = (c.weitere_profile || {})[key];\n  return extra ? { ...basis, ...extra, key } : { ...basis, key: 'haupt' };\n};\nconst aktiveProfile = c => ['haupt', ...Object.keys(c.weitere_profile || {})].map(k => profilDaten(c, k))\n  .filter(p => p.aktiv !== false && p.ig_user_id && !String(p.ig_user_id).startsWith('INSTAGRAM_'));\n\nconst pd = profilDaten(c, $('Profil für diese Stunde').first().json.profil);\nconst kwText = c.keywords[i.keyword] || i.leadmagnet_titel;\nconst system = `Du schreibst Social-Media-Posts für das Profil \"${pd.profil_name}\" ${pd.instagram_handle} von ${c.firma} (${c.ansprechpartner}), ${c.leistung}. Region: ${c.region}.\nZielgruppe: ${pd.zielgruppe}. Ansprache: \"${pd.ansprache}\". Ton: ${pd.ton}.${pd.schwerpunkt ? ' Schwerpunkt des Profils: ' + pd.schwerpunkt + '.' : ''}\nAufbau Instagram-Caption: starker Hook in Zeile 1 → 3–6 kurze Absätze mit echtem Mehrwert → Call-to-Action:\n\"Kommentiere ${i.keyword} und ich schicke dir ${kwText} kostenlos per DM.\" (max. 2.000 Zeichen, ohne Hashtags).\n${pd.fb_page_id ? `Facebook-Text: gleiche Botschaft, etwas ausführlicher, gleicher CTA mit Keyword ${i.keyword}, zusätzlich Hinweis auf Terminbuchung: ${c.termin_link}.` : 'text_facebook: leerer String (dieses Profil postet nur auf Instagram).'}\nhashtags: 8–12 passende deutsche Hashtags inkl. regionaler (#braunschweig #göttingen), als ein String.\nbild_prompt: ENGLISCHER Prompt für ein fotorealistisches Bild im Hochformat 4:5, authentisch, keine Schrift/Logos/Zahlen im Bild, keine erkennbaren realen Personen.\nvideo_prompt: ENGLISCHER Prompt für einen 5–10 s Clip im Hochformat 9:16 (B-Roll, ruhige Kamerafahrt), ohne Schrift im Bild.\nalt_text: deutsche Bildbeschreibung (Barrierefreiheit).\nleadmagnet_inhalt: ausführliche Gliederung + Inhalte (Markdown) für den Leadmagneten \"${i.leadmagnet_titel}\" – 6–8 Abschnitte, praxisnah, mit Checklisten. Letzter Abschnitt: Einladung zum kostenlosen Beratungsgespräch (${c.termin_link}).\ntext_tiktok: kurze TikTok-Caption (max. 300 Zeichen): Hook, 1–2 Sätze Mehrwert, CTA \"Gratis-Guide über den Link in meiner Bio\", 3–5 Hashtags.\nyoutube_titel: Titel für YouTube Shorts, max. 80 Zeichen, neugierig machend, ohne Clickbait, ohne Hashtags.\nyoutube_beschreibung: 2–4 Sätze Beschreibung für YouTube Shorts mit Mehrwert, OHNE Links (Links werden automatisch angehängt), am Ende 3–5 Hashtags inkl. #Shorts.\nsprechertext: Text, den ${c.ansprechpartner} als Avatar in einem Hochkant-Video spricht (nur bei Format video, sonst leerer String). Ich-Form, gesprochene Sprache, Ansprache \"${c.ansprache}\".\n  Länge 30–45 Sekunden (ca. 80–120 Wörter). Satz 1 = Hook (max. 10 Wörter), dann 2–3 konkrete Punkte, dann CTA: \"Schreib ${i.keyword} in die Kommentare – oder hol dir den Guide über den Link.\" (bei Ansprache \"Sie\" entsprechend formulieren).\n  Für Text-to-Speech schreiben: keine Abkürzungen (z. B. \"zum Beispiel\", \"Prozent\", \"Euro\"), keine Emojis, keine Hashtags, keine Klammern, Zahlen als Ziffern nur wenn eindeutig sprechbar.\n\nRechtliche Leitplanken (verbindlich, Werbung für Immobiliar-Verbraucherdarlehen in Deutschland):\\n- Nenne KEINE konkreten Zinssätze, Raten oder Effektivzinsen (sonst Pflichtangaben + repräsentatives Beispiel nach § 17 PAngV nötig).\\n- Keine Heilsversprechen oder Superlative (\\\"garantiert\\\", \\\"beste Konditionen\\\", \\\"immer\\\", \\\"sicher genehmigt\\\").\\n- Keine individuelle Beratung im Post – allgemeine Information, Beratung nur im Gespräch.\\n- Keine falschen Fakten zu Förderprogrammen; wenn unsicher, allgemein bleiben (\\\"aktuelle Förderprogramme prüfen\\\").\\n- Keine Mitbewerber namentlich nennen oder abwerten.`;\nconst user = `Post-Idee:\\nTitel: ${i.titel}\\nHook: ${i.hook}\\nKernaussage: ${i.kernaussage}\\nFormat: ${i.format}\\nLeadmagnet: ${i.leadmagnet_titel} – ${i.leadmagnet_beschreibung}\\nKeyword: ${i.keyword}`;\nreturn [{ json: { idee: i, claude_body: {\n  model: 'claude-opus-5-5',\n  max_tokens: 16000,\n  fallbacks: 'default',\n  output_config: { effort: 'medium', format: { type: 'json_schema', schema: {\"type\": \"object\", \"properties\": {\"caption_instagram\": {\"type\": \"string\"}, \"text_facebook\": {\"type\": \"string\"}, \"hashtags\": {\"type\": \"string\"}, \"bild_prompt\": {\"type\": \"string\"}, \"video_prompt\": {\"type\": \"string\"}, \"alt_text\": {\"type\": \"string\"}, \"leadmagnet_inhalt\": {\"type\": \"string\"}, \"text_tiktok\": {\"type\": \"string\"}, \"youtube_titel\": {\"type\": \"string\"}, \"youtube_beschreibung\": {\"type\": \"string\"}, \"sprechertext\": {\"type\": \"string\"}}, \"required\": [\"caption_instagram\", \"text_facebook\", \"hashtags\", \"bild_prompt\", \"video_prompt\", \"alt_text\", \"leadmagnet_inhalt\", \"text_tiktok\", \"youtube_titel\", \"youtube_beschreibung\", \"sprechertext\"], \"additionalProperties\": false} } },\n  system,\n  messages: [{ role: 'user', content: user }],\n}}}];\n"
       }
     },
     {
@@ -204,7 +217,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const p = $input.first().json;\nconst i = $('Claude-Prompt: Post').first().json.idee;\nconst c = $('Konfiguration').first().json;\nconst post_id = 'P' + new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);\nconst gamma = {\n  inputText: `# ${i.leadmagnet_titel}\\n\\n${p.leadmagnet_inhalt}`,\n  textMode: 'generate',\n  format: 'document',\n  numCards: 8,\n  exportAs: 'pdf',\n  additionalInstructions: `Leadmagnet von ${c.firma}. Seriös, hell, modern. Kontakt & Termin am Ende: ${c.termin_link}. Keine konkreten Zinssätze.`,\n  textOptions: { amount: 'medium', tone: 'kompetent, freundlich, verständlich', audience: c.zielgruppe, language: 'de' },\n  imageOptions: { source: 'aiGenerated' },\n  sharingOptions: { externalAccess: 'view' },\n};\nif (c.gamma_theme_id) gamma.themeId = c.gamma_theme_id;\nreturn [{ json: { ...p, post_id, idee_id: i.idee_id, format: i.format, keyword: i.keyword, leadmagnet_titel: i.leadmagnet_titel, gamma_body: gamma } }];\n"
+        "jsCode": "const p = $input.first().json;\nconst i = $('Claude-Prompt: Post').first().json.idee;\nconst c = $('Konfiguration').first().json;\n\n// Profil-Daten: Hauptprofil = Grundeinstellungen; weitere Profile überschreiben nur abweichende Werte\nconst profilDaten = (c, key) => {\n  const basis = { profil_name: c.firma, instagram_handle: '', posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],\n    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis', schwerpunkt: '', ...c };\n  const extra = (c.weitere_profile || {})[key];\n  return extra ? { ...basis, ...extra, key } : { ...basis, key: 'haupt' };\n};\nconst aktiveProfile = c => ['haupt', ...Object.keys(c.weitere_profile || {})].map(k => profilDaten(c, k))\n  .filter(p => p.aktiv !== false && p.ig_user_id && !String(p.ig_user_id).startsWith('INSTAGRAM_'));\n\nconst pd = profilDaten(c, $('Profil für diese Stunde').first().json.profil);\nconst post_id = 'P' + new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);\nconst gamma = {\n  inputText: `# ${i.leadmagnet_titel}\\n\\n${p.leadmagnet_inhalt}`,\n  textMode: 'generate',\n  format: 'document',\n  numCards: 8,\n  exportAs: 'pdf',\n  additionalInstructions: `Leadmagnet von ${c.firma}. Seriös, hell, modern. Kontakt & Termin am Ende: ${c.termin_link}. Keine konkreten Zinssätze.`,\n  textOptions: { amount: 'medium', tone: 'kompetent, freundlich, verständlich', audience: pd.zielgruppe, language: 'de' },\n  imageOptions: { source: 'aiGenerated' },\n  sharingOptions: { externalAccess: 'view' },\n};\nif (c.gamma_theme_id) gamma.themeId = c.gamma_theme_id;\nreturn [{ json: { ...p, post_id, profil: pd.key, profil_name: pd.profil_name, ist_facebook: !!pd.fb_page_id, idee_id: i.idee_id, format: i.format, keyword: i.keyword, leadmagnet_titel: i.leadmagnet_titel, gamma_body: gamma } }];\n"
       }
     },
     {
@@ -295,7 +308,7 @@
           },
           "conditions": [
             {
-              "id": "2412b085-551b-4390-8ad4-09b51a20dc5f",
+              "id": "42a9bcf4-6cfe-47fa-bef0-8603d656c34c",
               "leftValue": "={{ $json.status }}",
               "rightValue": "completed",
               "operator": {
@@ -341,7 +354,7 @@
           },
           "conditions": [
             {
-              "id": "f724b47f-25f2-4517-bf92-6e6bd974f49d",
+              "id": "286bc574-6d68-4252-ab8b-0c4803b56b4e",
               "leftValue": "={{ $('Post-Daten').first().json.format }}",
               "rightValue": "video",
               "operator": {
@@ -465,7 +478,7 @@
           },
           "conditions": [
             {
-              "id": "613b82f4-210d-4bf8-bd80-9754b0503482",
+              "id": "5df70d86-9d3e-4e5d-961a-bda9948bb011",
               "leftValue": "={{ $json.status }}",
               "rightValue": "COMPLETED",
               "operator": {
@@ -517,7 +530,7 @@
           },
           "conditions": [
             {
-              "id": "9cf89fe6-fe73-48b9-9787-a8f6f6e20d28",
+              "id": "a8695321-2ce5-4329-a4cc-b47f15eccaa8",
               "leftValue": "={{ $('Konfiguration').first().json.video_quelle }}",
               "rightValue": "heygen",
               "operator": {
@@ -654,7 +667,7 @@
           },
           "conditions": [
             {
-              "id": "b2da1d56-f352-4c22-ad5f-d15d994738df",
+              "id": "b6219f83-9c26-4e62-ab20-7b0d1f84321d",
               "leftValue": "={{ $json.fertig }}",
               "rightValue": "",
               "operator": {
@@ -692,7 +705,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const p = $('Post-Daten').first().json;\nconst g = $('Gamma-Ergebnis merken').first().json;\nconst r = $input.first().json;\nconst c = $('Konfiguration').first().json;\nconst media_url = p.format === 'video' ? (r.video?.url || '') : (r.images?.[0]?.url || '');\nconst heygen_video_id = r.heygen_video_id || '';\nconst ki = heygen_video_id && c.ki_hinweis ? '\\n\\n' + c.ki_hinweis : '';\n// Instagram erlaubt max. 2.200 Zeichen Caption\nconst ig = (p.caption_instagram + ki).slice(0, 2190 - p.hashtags.length) + '\\n\\n' + p.hashtags;\nif (!media_url) throw new Error('Keine Medien-URL erhalten: ' + JSON.stringify(r).slice(0, 500));\nreturn [{ json: {\n  post_id: p.post_id,\n  idee_id: p.idee_id,\n  erstellt_am: new Date().toISOString(),\n  format: p.format,\n  media_url,\n  caption_instagram: ig,\n  text_facebook: p.text_facebook + ki,\n  alt_text: p.alt_text,\n  keyword: p.keyword,\n  leadmagnet_titel: p.leadmagnet_titel,\n  gamma_url: g.gammaUrl || '',\n  gamma_pdf_url: g.exportUrl || '',\n  status: 'wartet_auf_freigabe',\n  ig_media_id: '', fb_post_id: '', permalink: '', veroeffentlicht_am: '',\n  reichweite: '', views: '', likes: '', kommentare: '', gespeichert: '', geteilt: '', leads: 0, letzter_check: '',\n  text_tiktok: p.text_tiktok + (ki ? ' ' + c.ki_hinweis : ''),\n  youtube_titel: p.youtube_titel.slice(0, 100),\n  youtube_beschreibung: `${p.youtube_beschreibung}\n\n🎁 Kostenloser Guide „${p.leadmagnet_titel}“: ${c.n8n_url}/webhook/guide/${p.keyword}\n📅 Kostenloses Beratungsgespräch: ${c.termin_link}${ki}`,\n  sprechertext: p.format === 'video' ? p.sprechertext : '',\n  heygen_video_id,\n  youtube_video_id: '', tiktok_publish_id: '', tiktok_video_id: '', tiktok_status: '',\n  yt_views: '', yt_likes: '', yt_kommentare: '', tt_views: '', tt_likes: '', tt_kommentare: '', tt_shares: '', video_check: '',\n}}];\n"
+        "jsCode": "const p = $('Post-Daten').first().json;\nconst g = $('Gamma-Ergebnis merken').first().json;\nconst r = $input.first().json;\nconst c = $('Konfiguration').first().json;\nconst media_url = p.format === 'video' ? (r.video?.url || '') : (r.images?.[0]?.url || '');\nconst heygen_video_id = r.heygen_video_id || '';\nconst ki = heygen_video_id && c.ki_hinweis ? '\\n\\n' + c.ki_hinweis : '';\n// Instagram erlaubt max. 2.200 Zeichen Caption\nconst ig = (p.caption_instagram + ki).slice(0, 2190 - p.hashtags.length) + '\\n\\n' + p.hashtags;\nif (!media_url) throw new Error('Keine Medien-URL erhalten: ' + JSON.stringify(r).slice(0, 500));\nreturn [{ json: {\n  post_id: p.post_id,\n  idee_id: p.idee_id,\n  profil: p.profil,\n  erstellt_am: new Date().toISOString(),\n  format: p.format,\n  media_url,\n  caption_instagram: ig,\n  text_facebook: p.text_facebook + ki,\n  alt_text: p.alt_text,\n  keyword: p.keyword,\n  leadmagnet_titel: p.leadmagnet_titel,\n  gamma_url: g.gammaUrl || '',\n  gamma_pdf_url: g.exportUrl || '',\n  status: 'wartet_auf_freigabe',\n  ig_media_id: '', fb_post_id: '', permalink: '', veroeffentlicht_am: '',\n  reichweite: '', views: '', likes: '', kommentare: '', gespeichert: '', geteilt: '', leads: 0, letzter_check: '',\n  text_tiktok: p.text_tiktok + (ki ? ' ' + c.ki_hinweis : ''),\n  youtube_titel: p.youtube_titel.slice(0, 100),\n  youtube_beschreibung: `${p.youtube_beschreibung}\n\n🎁 Kostenloser Guide „${p.leadmagnet_titel}“: ${c.n8n_url}/webhook/guide/${p.keyword}\n📅 Kostenloses Beratungsgespräch: ${c.termin_link}${ki}`,\n  sprechertext: p.format === 'video' ? p.sprechertext : '',\n  heygen_video_id,\n  youtube_video_id: '', tiktok_publish_id: '', tiktok_video_id: '', tiktok_status: '',\n  yt_views: '', yt_likes: '', yt_kommentare: '', tt_views: '', tt_likes: '', tt_kommentare: '', tt_shares: '', video_check: '',\n}}];\n"
       }
     },
     {
@@ -789,7 +802,7 @@
           },
           "conditions": [
             {
-              "id": "6e3de3ec-cde6-4a68-b964-8f8721c9c3e8",
+              "id": "bad4ecd9-dc17-45ef-b7f5-d4692ac62122",
               "leftValue": "={{ $('Post-Zeile bauen').first().json.format }}",
               "rightValue": "video",
               "operator": {
@@ -852,7 +865,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const p = $('Post-Zeile bauen').first().json;\nconst e = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nlet t = `📝 <b>Freigabe: ${e(p.post_id)}</b> (${e(p.format)})\\n\\n<b>Instagram</b>\\n${e(p.caption_instagram)}\\n\\n<b>Facebook</b>\\n${e(p.text_facebook)}`;\nif (p.format === 'video') {\n  const c = $('Konfiguration').first().json;\n  if (p.sprechertext) t += `\\n\\n<b>🎙 Sprechertext (Avatar)</b>\\n${e(p.sprechertext)}`;\n  if (c.tiktok_aktiv) t += `\n\n<b>TikTok</b>\n${e(p.text_tiktok)}`;\n  if (c.youtube_aktiv) t += `\n\n<b>YouTube Shorts</b>\n${e(p.youtube_titel)}\n${e(p.youtube_beschreibung)}`;\n}\nt = t.slice(0, 3700);\nt += `\\n\\n🎬 <a href=\"${e(p.media_url)}\">Medien ansehen</a>`;\nt += `\\n🎁 Leadmagnet: <a href=\"${e(p.gamma_url)}\">${e(p.leadmagnet_titel)}</a>\\n🔑 Keyword: <b>${e(p.keyword)}</b>`;\nreturn [{ json: { text: t, post_id: p.post_id } }];\n"
+        "jsCode": "const p = $('Post-Zeile bauen').first().json;\nconst e = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst d = $('Post-Daten').first().json;\nlet t = `📝 <b>Freigabe: ${e(p.post_id)}</b> (${e(p.format)})\\n👤 Profil: <b>${e(d.profil_name)}</b>\\n\\n<b>Instagram</b>\\n${e(p.caption_instagram)}`;\nif (d.ist_facebook) t += `\\n\\n<b>Facebook</b>\\n${e(p.text_facebook)}`;\nif (p.format === 'video') {\n  const c = $('Konfiguration').first().json;\n  if (p.sprechertext) t += `\\n\\n<b>🎙 Sprechertext (Avatar)</b>\\n${e(p.sprechertext)}`;\n  if (c.tiktok_aktiv) t += `\n\n<b>TikTok</b>\n${e(p.text_tiktok)}`;\n  if (c.youtube_aktiv) t += `\n\n<b>YouTube Shorts</b>\n${e(p.youtube_titel)}\n${e(p.youtube_beschreibung)}`;\n}\nt = t.slice(0, 3700);\nt += `\\n\\n🎬 <a href=\"${e(p.media_url)}\">Medien ansehen</a>`;\nt += `\\n🎁 Leadmagnet: <a href=\"${e(p.gamma_url)}\">${e(p.leadmagnet_titel)}</a>\\n🔑 Keyword: <b>${e(p.keyword)}</b>`;\nreturn [{ json: { text: t, post_id: p.post_id } }];\n"
       }
     },
     {
@@ -911,7 +924,7 @@
     }
   ],
   "connections": {
-    "Mo/Mi/Fr 07:00": {
+    "Stündlich 06–20 Uhr": {
       "main": [
         [
           {
@@ -923,6 +936,17 @@
       ]
     },
     "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Profil für diese Stunde",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Profil für diese Stunde": {
       "main": [
         [
           {

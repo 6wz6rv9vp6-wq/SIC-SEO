@@ -3,7 +3,7 @@
 Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Instagram & Facebook mit Gamma-Leadmagnet → Monitoring & Leads über Komently.
 
 ```
- Mo 06:00                Mo/Mi/Fr 07:00                       Klick in Telegram
+ Mo 06:00                laut posting_plan je Profil           Klick in Telegram
 ┌──────────────┐        ┌──────────────────────────┐         ┌────────────────────────┐
 │ 01 Recherche │──Ideen─▶│ 02 Content-Generierung   │──Entwurf▶│ 03 Freigabe & Posting  │
 │ Perplexity   │ (Sheet) │ Claude: Texte            │ Telegram │ ✅ → Instagram + FB    │
@@ -23,7 +23,7 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 |---|---|---|
 | `workflows/00_fehler_alarm.json` | Fehler aller Workflows an Telegram | Error Trigger |
 | `workflows/01_recherche.json` | Was Kunden bewegt, was Mitbewerber machen, 6 Post-Ideen | Mo 06:00 |
-| `workflows/02_content_generierung.json` | Caption IG/FB, Hashtags, Bild oder Reel, Gamma-Leadmagnet, Telegram-Freigabe | Mo/Mi/Fr 07:00 |
+| `workflows/02_content_generierung.json` | Caption IG/FB, Hashtags, Bild oder Reel, Gamma-Leadmagnet, Telegram-Freigabe – je Profil | stündlich, erzeugt laut `posting_plan` (Haupt: Mo/Mi/Fr 7 Uhr, Zweitprofil: Di/Do 7 Uhr) |
 | `workflows/03_freigabe_posting.json` | Button-Klick auswerten, auf Instagram + Facebook posten | Telegram-Button |
 | `workflows/04_monitoring.json` | Reichweite/Likes/Saves/Shares, neue Kommentare, Top-Posts | alle 3 Std. 8–20 Uhr |
 | `workflows/05_lead_webhook.json` | Speichert Leads aus Komently (oder ManyChat), Telegram-Meldung | Webhook von Komently |
@@ -54,7 +54,7 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 
 ## 2. Einrichtung Schritt für Schritt
 
-1. **Google Sheet anlegen** mit den Tabs `Recherche`, `Ideen`, `Posts`, `Leads`. Erste Zeile jedes Tabs = Inhalt der jeweiligen CSV aus `vorlagen/`. Die Sheet-ID steht in der URL (`/spreadsheets/d/<ID>/edit`).
+1. **Google Sheet anlegen** (oder bestehendes ergänzen) mit den Tabs `Recherche`, `Ideen`, `Posts`, `Leads`. Erste Zeile jedes Tabs = Inhalt der jeweiligen CSV aus `vorlagen/`. Die Sheet-ID steht in der URL (`/spreadsheets/d/<ID>/edit`).
 2. **Telegram-Bot**: Bei @BotFather `/newbot`, Token kopieren. Dem Bot eine Nachricht schicken und die Chat-ID z. B. über `https://api.telegram.org/bot<TOKEN>/getUpdates` auslesen.
 3. **Workflows importieren**: In n8n → *Workflows → Import from File* – alle sieben JSON-Dateien aus `workflows/` (00–06).
 4. **Credentials in n8n anlegen** und in den rot markierten Nodes auswählen:
@@ -108,10 +108,36 @@ Pro Keyword (Beispiel CHECKLISTE):
 
 **ManyChat statt Komently?** Workflow 05 funktioniert auch damit: per *External Request* an dieselbe URL senden (Felder `first_name`, `last_name`, `email`, `ig_username`, `keyword`). Die Antwort enthält `leadmagnet_url` und `nachricht` zum Mappen in Custom Fields.
 
+## 4a. Mehrere Instagram-Profile (Hauptprofil + Zweitprofil)
+
+Das System bespielt mehrere Profile mit **eigenen Inhalten**. Recherche, Freigabe per Telegram, Monitoring und Leads laufen gemeinsam, jede Idee und jeder Post gehört aber zu genau einem Profil (Spalte `profil` im Sheet).
+
+| | Hauptprofil | Zweitprofil |
+|---|---|---|
+| Kanäle | Instagram + Facebook | nur Instagram |
+| Entwürfe | `posting_plan` (Standard Mo/Mi/Fr 7 Uhr) | eigener `posting_plan` (Standard Di/Do 7 Uhr) |
+| Inhalte | Zielgruppe/Ton/Schwerpunkt aus den Grundeinstellungen | eigener `schwerpunkt`, optional eigene `zielgruppe`, `ansprache`, `ton` |
+
+**In der Konfiguration (alle Workflows):** Die Grundeinstellungen gelten fürs Hauptprofil. Unter `weitere_profile.zweitprofil` trägst du nur ein, was abweicht: mindestens `ig_user_id`, `instagram_handle`, `profil_name` und `schwerpunkt`, damit sich die Inhalte klar unterscheiden. Solange dort noch `INSTAGRAM_ID_ZWEITPROFIL` steht, ist das Zweitprofil aus und alles läuft wie bisher nur fürs Hauptprofil. Pro Stunde ist immer nur ein Profil dran, die `posting_plan`-Zeiten also nicht doppelt vergeben.
+
+**Meta-Verbindung des Zweitprofils:**
+1. Das Zweitprofil muss ein **Business- oder Creator-Konto** sein.
+2. Die Instagram-API (über Facebook-Login) braucht auch für ein reines Instagram-Profil eine **verknüpfte Facebook-Seite**, gepostet wird dort aber nichts (`fb_page_id: ''`). Eine Facebook-Seite kann nur mit einem Instagram-Konto verknüpft sein. Gibt es keine freie Seite, eine schlichte neue Seite anlegen (z. B. „Smart Immo Concept – Zweitprofil“) und das Zweitprofil damit verbinden (Meta Business Suite → Einstellungen → Instagram-Konten).
+3. **Ein Zugangsschlüssel für beide Profile:** Statt eines Page-Tokens am besten einen **System-User-Token** nehmen: Meta Business Suite → Unternehmenseinstellungen → Nutzer → Systemnutzer → hinzufügen, beiden Seiten und beiden Instagram-Konten zuweisen, Token mit den Berechtigungen aus Abschnitt 3 erzeugen (Ablauf: „Nie“). Diesen Token im Credential „Meta Page Token“ eintragen – er gilt dann für beide Profile.
+4. `ig_user_id` des Zweitprofils: `GET /{seiten-id}?fields=instagram_business_account` (Graph API Explorer).
+
+**Komently fürs Zweitprofil:** Das Zweitprofil in Komently zusätzlich verbinden und die Keyword-Automationen dort ebenfalls anlegen, mit diesen Links (`profil=zweitprofil` anhängen):
+- Guide-Link: `https://<n8n-domain>/webhook/guide/CHECKLISTE?profil=zweitprofil`
+- Lead-Webhook: `https://<n8n-domain>/webhook/social-lead?token=<webhook_token>&keyword=CHECKLISTE&quelle=komently&profil=zweitprofil`
+
+So bekommt jemand, der beim Zweitprofil kommentiert, den neuesten Guide **des Zweitprofils** (gibt es dort noch keinen, den neuesten des Hauptprofils).
+
+**Im Google Sheet:** In den Tabs `Ideen`, `Posts` und `Leads` rechts die Spalte `profil` ergänzen. Bestehende Zeilen ohne Eintrag zählen automatisch zum Hauptprofil.
+
 ## 5. Ablauf im Alltag
 
 1. Montag früh kommt der **Wochenreport** (Kundenthemen, Mitbewerber, 6 neue Ideen) in Telegram.
-2. Mo/Mi/Fr um 7 Uhr kommt ein **Entwurf**: Bild/Video + Instagram- und Facebook-Text + Link zum Gamma-Leadmagneten.
+2. Laut `posting_plan` kommt ein **Entwurf** (Hauptprofil Mo/Mi/Fr 7 Uhr, Zweitprofil Di/Do 7 Uhr): Profilname, Bild/Video, Instagram-Text (beim Hauptprofil auch Facebook-Text) und Link zum Gamma-Leadmagneten.
 3. Du tippst **✅ Freigeben & posten** → der Post geht auf Instagram (Bild oder Reel) und Facebook raus. **🔁** erzeugt die Idee neu, **❌** verwirft.
 4. Jemand kommentiert das Keyword → Komently schickt die DM, fragt die E-Mail ab und sendet den Guide-Link (dieser führt immer zum neuesten passenden Gamma-Guide) → du bekommst „🎯 Neuer Lead“ in Telegram.
 5. Alle 3 Stunden: neue Kommentare mit **Antwortvorschlag**, Warnung bei Kritik, Hinweis auf Posts mit überdurchschnittlichem Engagement (Kandidat zum Boosten).
@@ -152,7 +178,7 @@ Den Inhalt eines Entwurfs änderst du direkt im Sheet (`Posts` → `caption_inst
 
 **Einmal pro Woche kurz prüfen**
 
-- Kam der Wochenreport (Mo) und die Entwürfe (Mo/Mi/Fr)?
+- Kam der Wochenreport (Mo) und die Entwürfe beider Profile?
 - Guthaben bei Anthropic, Perplexity, fal.ai, Gamma und Apify (bei Anthropic und fal.ai lässt sich Auto-Aufladen bzw. eine Warnung einstellen).
 - Meta-Token: Er läuft nicht ab, wird aber ungültig, wenn du dein Facebook-Passwort änderst oder die App-Berechtigung entziehst. Dann neuen Page-Token erzeugen und im Credential „Meta Page Token“ ersetzen.
 - Auf dem Server: `cd /opt/n8n && docker compose ps` (alle Container „running“), Backups in `/opt/n8n/backups`.

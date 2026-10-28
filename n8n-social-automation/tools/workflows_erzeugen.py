@@ -297,8 +297,31 @@ return [{
     erlaubte_telegram_user_ids: [],        // z. B. [123456789] – leer = nur chat_id wird geprüft
 
     graph_version: 'v24.0',                // Meta Graph API Version
+
+    // ---- Hauptprofil (Instagram + Facebook) ----
+    profil_name: 'Smart Immo Concept',
+    instagram_handle: '@HANDLE_HAUPTPROFIL',
     ig_user_id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID',
-    fb_page_id: 'FACEBOOK_PAGE_ID',
+    fb_page_id: 'FACEBOOK_PAGE_ID',        // leer lassen = nur Instagram
+    posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],   // Wochentag + Uhrzeit (Stunde), zu der ein Entwurf erstellt wird
+    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis',
+    schwerpunkt: '',                       // optional: inhaltlicher Fokus dieses Profils
+
+    // ---- Weitere Instagram-Profile ----
+    // Nur Werte eintragen, die vom Hauptprofil abweichen. Alles andere (Firma, Keywords, Termin-Link …) wird übernommen.
+    // Ein Profil ist aktiv, sobald eine echte ig_user_id eingetragen ist.
+    weitere_profile: {
+      zweitprofil: {
+        profil_name: 'Smart Immo Concept (Zweitprofil)',
+        instagram_handle: '@HANDLE_ZWEITPROFIL',
+        ig_user_id: 'INSTAGRAM_ID_ZWEITPROFIL',
+        fb_page_id: '',                    // nur Instagram
+        posting_plan: ['Di 07', 'Do 07'],  // nicht dieselbe Stunde wie ein anderes Profil
+        schwerpunkt: 'HIER EINTRAGEN: z. B. Immobilienwissen, Kapitalanlage, Tipps rund um Kauf & Finanzierung',
+        // zielgruppe: '…', ansprache: 'du', ton: '…',
+      },
+    },
+    test_profil: 'haupt',                  // welches Profil ein manueller Test von Workflow 02 nimmt
 
     fal_image_model: 'fal-ai/flux-pro/v1.1',
     fal_video_model: 'fal-ai/kling-video/v2.1/standard/text-to-video',
@@ -332,6 +355,18 @@ EXT_KONFIG = """    // Videoquelle für Video-Posts
     tiktok_client_secret: '',
 """
 KONFIG = KONFIG.replace("__EXT_KONFIG__", EXT_KONFIG if EXT else "")
+
+PROFIL_JS = """
+// Profil-Daten: Hauptprofil = Grundeinstellungen; weitere Profile überschreiben nur abweichende Werte
+const profilDaten = (c, key) => {
+  const basis = { profil_name: c.firma, instagram_handle: '', posting_plan: ['Mo 07', 'Mi 07', 'Fr 07'],
+    ton: 'nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis', schwerpunkt: '', ...c };
+  const extra = (c.weitere_profile || {})[key];
+  return extra ? { ...basis, ...extra, key } : { ...basis, key: 'haupt' };
+};
+const aktiveProfile = c => ['haupt', ...Object.keys(c.weitere_profile || {})].map(k => profilDaten(c, k))
+  .filter(p => p.aktiv !== false && p.ig_user_id && !String(p.ig_user_id).startsWith('INSTAGRAM_'));
+"""
 
 COMPLIANCE = """Rechtliche Leitplanken (verbindlich, Werbung für Immobiliar-Verbraucherdarlehen in Deutschland):
 - Nenne KEINE konkreten Zinssätze, Raten oder Effektivzinsen (sonst Pflichtangaben + repräsentatives Beispiel nach § 17 PAngV nötig).
@@ -431,6 +466,7 @@ RESEARCH_SCHEMA = {
             "required": ["name", "beobachtung", "was_wir_besser_machen"], "additionalProperties": False}},
         "content_luecken": {"type": "array", "items": {"type": "string"}},
         "content_ideen": {"type": "array", "items": {"type": "object", "properties": {
+            "profil": {"type": "string"},
             "titel": {"type": "string"},
             "hook": {"type": "string"},
             "kernaussage": {"type": "string"},
@@ -438,7 +474,7 @@ RESEARCH_SCHEMA = {
             "keyword": {"type": "string"},
             "leadmagnet_titel": {"type": "string"},
             "leadmagnet_beschreibung": {"type": "string"}},
-            "required": ["titel", "hook", "kernaussage", "format", "keyword", "leadmagnet_titel", "leadmagnet_beschreibung"],
+            "required": ["profil", "titel", "hook", "kernaussage", "format", "keyword", "leadmagnet_titel", "leadmagnet_beschreibung"],
             "additionalProperties": False}},
     },
     "required": ["zusammenfassung", "kundenthemen", "mitbewerber", "content_luecken", "content_ideen"],
@@ -456,10 +492,17 @@ try {
 let ads = '(keine Daten)';
 try { ads = JSON.stringify($('Meta Ad Library – aktive Anzeigen').first().json.data || []).slice(0, 8000); } catch (e) {}
 
+""" + PROFIL_JS + """
+let profile = aktiveProfile(c);
+if (!profile.length) profile = [profilDaten(c, 'haupt')];
+const profilText = profile.map(p => `- Profil "${p.key}" (${p.profil_name} ${p.instagram_handle}): ${Math.max(2, p.posting_plan.length + 1)} Ideen. ` +
+  `Zielgruppe: ${p.zielgruppe}. Ansprache: "${p.ansprache}". Ton: ${p.ton}.` + (p.schwerpunkt ? ` Schwerpunkt: ${p.schwerpunkt}.` : '') +
+  (p.fb_page_id ? ' Kanäle: Instagram + Facebook.' : ' Kanal: nur Instagram.')).join('\\n');
 const system = `Du bist Content-Stratege für ${c.firma} (${c.leistung}), Region: ${c.region}.
-Zielgruppe: ${c.zielgruppe}. Ansprache in Posts: "${c.ansprache}".
 Aus Rechercheergebnissen leitest du ab, was Kunden bewegt, was Mitbewerber tun und wo Content-Lücken sind.
-Erzeuge daraus 6 konkrete Post-Ideen für Instagram & Facebook (Mix aus ca. 4x bild, 2x video).
+Erzeuge daraus konkrete Post-Ideen für diese Social-Media-Profile (Feld "profil" = Profil-Schlüssel):
+${profilText}
+Jedes Profil bekommt eigene Themen passend zu seinem Schwerpunkt – keine Themen doppelt zwischen den Profilen. Mix je Profil: ca. 2/3 bild, 1/3 video.
 Jede Idee braucht einen Leadmagneten (kurzer Guide/Checkliste als Gamma-Dokument) und GENAU eines dieser Keywords:
 ${Object.entries(c.keywords).map(([k, v]) => k + ' = ' + v).join('\\n')}
 Wähle das Keyword, das inhaltlich zum Leadmagneten passt. Leadmagnet-Titel darf spezifischer sein als die Keyword-Beschreibung.
@@ -471,6 +514,7 @@ const user = `## Recherche: Kundenthemen\\n${txt('Perplexity – Kundenthemen')}
 const schema = SCHEMA;
 // Claude darf nur die konfigurierten Keywords verwenden (sonst findet Komently/ManyChat den Post nicht)
 schema.properties.content_ideen.items.properties.keyword.enum = Object.keys(c.keywords);
+schema.properties.content_ideen.items.properties.profil.enum = profile.map(p => p.key);
 return [{ json: { claude_body: {
   model: '""" + MODEL + """',
   max_tokens: 16000,
@@ -495,6 +539,7 @@ return r.content_ideen.map((i, n) => ({ json: {
   keyword: i.keyword.toUpperCase(),
   leadmagnet_titel: i.leadmagnet_titel, leadmagnet_beschreibung: i.leadmagnet_beschreibung,
   status: 'neu',
+  profil: i.profil || 'haupt',
 }}));
 """), 1840, 200)
 add(wf, "sheets", "Sheet: Ideen anhängen", sheet_write("append", "Ideen"), 2060, 200)
@@ -515,7 +560,10 @@ const e = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>
 let t = `📊 <b>Wochen-Recherche</b>\\n\\n${e(r.zusammenfassung)}\\n\\n<b>Was Kunden bewegt</b>\\n`;
 t += r.kundenthemen.slice(0, 5).map(k => '• ' + e(k.thema)).join('\\n');
 t += '\\n\\n<b>Mitbewerber</b>\\n' + r.mitbewerber.slice(0, 4).map(m => `• ${e(m.name)}: ${e(m.beobachtung)}`).join('\\n');
-t += '\\n\\n<b>Neue Post-Ideen</b>\\n' + r.content_ideen.map(i => `• [${i.format}] ${e(i.titel)} → ${e(i.keyword)}`).join('\\n');
+const profile = [...new Set(r.content_ideen.map(i => i.profil))];
+profile.forEach(pr => {
+  t += `\\n\\n<b>Neue Post-Ideen – ${e(pr)}</b>\\n` + r.content_ideen.filter(i => i.profil === pr).map(i => `• [${i.format}] ${e(i.titel)} → ${e(i.keyword)}`).join('\\n');
+});
 return [{ json: { text: t.slice(0, 4000) } }];
 """), 1840, 600)
 add(wf, "tg", "Telegram: Wochenreport", tg_text("={{ $json.text }}"), 2060, 600)
@@ -561,22 +609,43 @@ sprechertext: Text, den ${c.ansprechpartner} als Avatar in einem Hochkant-Video 
 """
 
 wf = WF("02 Content-Generierung – Post, Medien & Gamma-Leadmagnet")
-add(wf, "sched", "Mo/Mi/Fr 07:00", schedule_cron("0 7 * * 1,3,5"), 0, 300)
+add(wf, "sched", "Stündlich 06–20 Uhr", schedule_cron("0 6-20 * * *"), 0, 300)
 add(wf, "code", "Konfiguration", code(KONFIG), 220, 300)
+add(wf, "code", "Profil für diese Stunde", code("""
+const c = $('Konfiguration').first().json;
+""" + PROFIL_JS + """
+// Welches Profil ist laut posting_plan jetzt dran? (z. B. 'Mo 07')
+const jetzt = $now.setZone('Europe/Berlin');
+const tage = ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+const slot = tage[jetzt.weekday] + ' ' + String(jetzt.hour).padStart(2, '0');
+const norm = s => { const [d, h] = String(s).trim().split(/\\s+/); return d + ' ' + String(parseInt(h, 10)).padStart(2, '0'); };
+const profil = $execution.mode === 'test'
+  ? profilDaten(c, c.test_profil || 'haupt')          // manueller Test: immer ein Profil
+  : aktiveProfile(c).find(p => p.posting_plan.map(norm).includes(slot));
+if (!profil) return [];                               // in dieser Stunde ist kein Profil dran
+return [{ json: { profil: profil.key, profil_name: profil.profil_name, slot } }];
+"""), 330, 300)
 add(wf, "sheets", "Sheet: neue Ideen lesen", sheet_read("Ideen", "status", "neu"), 440, 300, alwaysOutputData=True)
-add(wf, "limit", "Nächste Idee", {"maxItems": 1}, 660, 300)
+add(wf, "code", "Nächste Idee", code("""
+// Erste offene Idee für das Profil (Ideen ohne Profil-Angabe gehören zum Hauptprofil)
+const pr = $('Profil für diese Stunde').first().json.profil;
+const idee = $input.all().map(i => i.json).find(i => i.idee_id && (i.profil || 'haupt') === pr);
+return [{ json: idee || {} }];
+"""), 660, 300)
 add(wf, "if", "Idee vorhanden?", if_node(cond("={{ $json.idee_id }}", "", op="notEmpty")), 770, 300)
 add(wf, "tg", "Telegram: keine Ideen", tg_text(
-    "=💡 Keine neuen Post-Ideen mehr im Sheet. Starte Workflow 01 (Recherche) manuell oder trag eigene Ideen im Tab <b>Ideen</b> mit Status <b>neu</b> ein."), 990, 500)
+    "=💡 Keine neuen Post-Ideen für <b>{{ $('Profil für diese Stunde').first().json.profil_name }}</b>. Starte Workflow 01 (Recherche) manuell oder trag eigene Ideen im Tab <b>Ideen</b> mit Status <b>neu</b> ein."), 990, 500)
 add(wf, "code", "Claude-Prompt: Post", code("""
 const c = $('Konfiguration').first().json;
 const i = $input.first().json;
+""" + PROFIL_JS + """
+const pd = profilDaten(c, $('Profil für diese Stunde').first().json.profil);
 const kwText = c.keywords[i.keyword] || i.leadmagnet_titel;
-const system = `Du schreibst Social-Media-Posts für ${c.firma} (${c.ansprechpartner}), ${c.leistung}. Region: ${c.region}.
-Zielgruppe: ${c.zielgruppe}. Ansprache: "${c.ansprache}". Ton: nahbar, kompetent, klar, ohne Floskeln, sparsame Emojis.
+const system = `Du schreibst Social-Media-Posts für das Profil "${pd.profil_name}" ${pd.instagram_handle} von ${c.firma} (${c.ansprechpartner}), ${c.leistung}. Region: ${c.region}.
+Zielgruppe: ${pd.zielgruppe}. Ansprache: "${pd.ansprache}". Ton: ${pd.ton}.${pd.schwerpunkt ? ' Schwerpunkt des Profils: ' + pd.schwerpunkt + '.' : ''}
 Aufbau Instagram-Caption: starker Hook in Zeile 1 → 3–6 kurze Absätze mit echtem Mehrwert → Call-to-Action:
 "Kommentiere ${i.keyword} und ich schicke dir ${kwText} kostenlos per DM." (max. 2.000 Zeichen, ohne Hashtags).
-Facebook-Text: gleiche Botschaft, etwas ausführlicher, gleicher CTA mit Keyword ${i.keyword}, zusätzlich Hinweis auf Terminbuchung: ${c.termin_link}.
+${pd.fb_page_id ? `Facebook-Text: gleiche Botschaft, etwas ausführlicher, gleicher CTA mit Keyword ${i.keyword}, zusätzlich Hinweis auf Terminbuchung: ${c.termin_link}.` : 'text_facebook: leerer String (dieses Profil postet nur auf Instagram).'}
 hashtags: 8–12 passende deutsche Hashtags inkl. regionaler (#braunschweig #göttingen), als ein String.
 bild_prompt: ENGLISCHER Prompt für ein fotorealistisches Bild im Hochformat 4:5, authentisch, keine Schrift/Logos/Zahlen im Bild, keine erkennbaren realen Personen.
 video_prompt: ENGLISCHER Prompt für einen 5–10 s Clip im Hochformat 9:16 (B-Roll, ruhige Kamerafahrt), ohne Schrift im Bild.
@@ -600,6 +669,8 @@ add(wf, "code", "Post-Daten", code("""
 const p = $input.first().json;
 const i = $('Claude-Prompt: Post').first().json.idee;
 const c = $('Konfiguration').first().json;
+""" + PROFIL_JS + """
+const pd = profilDaten(c, $('Profil für diese Stunde').first().json.profil);
 const post_id = 'P' + new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
 const gamma = {
   inputText: `# ${i.leadmagnet_titel}\\n\\n${p.leadmagnet_inhalt}`,
@@ -608,12 +679,12 @@ const gamma = {
   numCards: 8,
   exportAs: 'pdf',
   additionalInstructions: `Leadmagnet von ${c.firma}. Seriös, hell, modern. Kontakt & Termin am Ende: ${c.termin_link}. Keine konkreten Zinssätze.`,
-  textOptions: { amount: 'medium', tone: 'kompetent, freundlich, verständlich', audience: c.zielgruppe, language: 'de' },
+  textOptions: { amount: 'medium', tone: 'kompetent, freundlich, verständlich', audience: pd.zielgruppe, language: 'de' },
   imageOptions: { source: 'aiGenerated' },
   sharingOptions: { externalAccess: 'view' },
 };
 if (c.gamma_theme_id) gamma.themeId = c.gamma_theme_id;
-return [{ json: { ...p, post_id, idee_id: i.idee_id, format: i.format, keyword: i.keyword, leadmagnet_titel: i.leadmagnet_titel, gamma_body: gamma } }];
+return [{ json: { ...p, post_id, profil: pd.key, profil_name: pd.profil_name, ist_facebook: !!pd.fb_page_id, idee_id: i.idee_id, format: i.format, keyword: i.keyword, leadmagnet_titel: i.leadmagnet_titel, gamma_body: gamma } }];
 """), 1540, 300)
 
 # Gamma: erzeugen + Polling-Schleife
@@ -631,7 +702,7 @@ if ($runIndex > 45) throw new Error('Gamma braucht seit über 15 Minuten (Status
 return [{ json: s }];
 """), 2420, 300)
 add(wf, "if", "Gamma fertig?", if_node(cond("={{ $json.status }}", "completed")), 2640, 300)
-wf.chain("Mo/Mi/Fr 07:00", "Konfiguration", "Sheet: neue Ideen lesen", "Nächste Idee", "Idee vorhanden?")
+wf.chain("Stündlich 06–20 Uhr", "Konfiguration", "Profil für diese Stunde", "Sheet: neue Ideen lesen", "Nächste Idee", "Idee vorhanden?")
 wf.link("Idee vorhanden?", "Telegram: keine Ideen", out=1)
 wf.chain("Idee vorhanden?", "Claude-Prompt: Post",
          "Claude – Post schreiben", "Claude-Antwort parsen", "Post-Daten", "Gamma – Leadmagnet erzeugen",
@@ -746,6 +817,7 @@ if (!media_url) throw new Error('Keine Medien-URL erhalten: ' + JSON.stringify(r
 return [{ json: {
   post_id: p.post_id,
   idee_id: p.idee_id,
+  profil: p.profil,
   erstellt_am: new Date().toISOString(),
   format: p.format,
   media_url,
@@ -789,7 +861,9 @@ EXT_FREIGABE = """if (p.format === 'video') {
 add(wf, "code", "Freigabe-Text bauen", code("""
 const p = $('Post-Zeile bauen').first().json;
 const e = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-let t = `📝 <b>Freigabe: ${e(p.post_id)}</b> (${e(p.format)})\\n\\n<b>Instagram</b>\\n${e(p.caption_instagram)}\\n\\n<b>Facebook</b>\\n${e(p.text_facebook)}`;
+const d = $('Post-Daten').first().json;
+let t = `📝 <b>Freigabe: ${e(p.post_id)}</b> (${e(p.format)})\\n👤 Profil: <b>${e(d.profil_name)}</b>\\n\\n<b>Instagram</b>\\n${e(p.caption_instagram)}`;
+if (d.ist_facebook) t += `\\n\\n<b>Facebook</b>\\n${e(p.text_facebook)}`;
 """ + (EXT_FREIGABE if EXT else "") + """t = t.slice(0, 3700);
 t += `\\n\\n🎬 <a href="${e(p.media_url)}">Medien ansehen</a>`;
 t += `\\n🎁 Leadmagnet: <a href="${e(p.gamma_url)}">${e(p.leadmagnet_titel)}</a>\\n🔑 Keyword: <b>${e(p.keyword)}</b>`;
@@ -834,7 +908,10 @@ const k = $('Klick auswerten').first().json;
 const p = $input.all()[0]?.json;
 if (!p || !p.post_id) throw new Error('Post nicht gefunden: ' + k.post_id);
 const offen = p.status === 'wartet_auf_freigabe';
-return [{ json: { ...p, aktion: k.aktion, offen, ist_video: p.format === 'video' } }];
+""" + PROFIL_JS + """
+const pd = profilDaten($('Konfiguration').first().json, p.profil || 'haupt');
+return [{ json: { ...p, aktion: k.aktion, offen, ist_video: p.format === 'video',
+  profil_name: pd.profil_name, ig_user_id: pd.ig_user_id, fb_page_id: pd.fb_page_id || '' } }];
 """), 1100, 300)
 add(wf, "if", "Noch offen?", if_node(cond("={{ $json.offen }}", "", op="true", typ="boolean")), 1320, 300)
 add(wf, "tg", "Telegram: schon erledigt", tg_text(
@@ -903,7 +980,7 @@ else:
 # Freigeben -> Instagram
 P = "$('Medien-URL bereit').first().json"
 add(wf, "http", "Instagram: Container anlegen", http(
-    "POST", G + "/{{ $('Konfiguration').first().json.ig_user_id }}/media", auth="httpQueryAuth",
+    "POST", G + "/{{ $('Status prüfen').first().json.ig_user_id }}/media", auth="httpQueryAuth",
     body_expr="={{ JSON.stringify(" + P + ".ist_video ? { media_type: 'REELS', video_url: " + P + ".media_url, caption: "
               + P + ".caption_instagram, share_to_feed: true } : { image_url: " + P + ".media_url, caption: "
               + P + ".caption_instagram }) }}"), 1760, 200)
@@ -920,19 +997,19 @@ return [{ json: { status_code: s } }];
 """), 2640, 60)
 add(wf, "if", "Reel verarbeitet?", if_node(cond("={{ $json.status_code }}", "FINISHED")), 2860, 60)
 add(wf, "http", "Instagram: veröffentlichen", http(
-    "POST", G + "/{{ $('Konfiguration').first().json.ig_user_id }}/media_publish", auth="httpQueryAuth",
+    "POST", G + "/{{ $('Status prüfen').first().json.ig_user_id }}/media_publish", auth="httpQueryAuth",
     query=[("creation_id", "={{ $('Instagram: Container anlegen').first().json.id }}")]), 3080, 200)
 add(wf, "http", "Instagram: Permalink holen", http(
     "GET", G + "/{{ $json.id }}", auth="httpQueryAuth", query=[("fields", "id,permalink")]), 3300, 200)
 add(wf, "http", "Facebook: posten", http(
-    "POST", G + "/{{ $('Konfiguration').first().json.fb_page_id }}/{{ " + P + ".ist_video ? 'videos' : 'photos' }}",
+    "POST", G + "/{{ $('Status prüfen').first().json.fb_page_id }}/{{ " + P + ".ist_video ? 'videos' : 'photos' }}",
     auth="httpQueryAuth",
     body_expr="={{ JSON.stringify(" + P + ".ist_video ? { file_url: " + P + ".media_url, description: " + P
               + ".text_facebook } : { url: " + P + ".media_url, message: " + P + ".text_facebook, published: true }) }}",
     timeout=300000), 3520, 200)
 add(wf, "code", "Status: veröffentlicht", code("""
 const ig = $('Instagram: Permalink holen').first().json;
-const fb = $input.first().json;
+const fb = $('Facebook: posten').isExecuted ? $('Facebook: posten').first().json : {};
 return [{ json: {
   post_id: $('Status prüfen').first().json.post_id,
   status: 'veroeffentlicht',
@@ -945,9 +1022,9 @@ return [{ json: {
 """), 3740, 200)
 add(wf, "sheets", "Sheet: Post veröffentlicht", sheet_write("update", "Posts", "post_id"), 3960, 200)
 add(wf, "tg", "Telegram: veröffentlicht", tg_text(
-    "=✅ <b>Veröffentlicht</b> ({{ $('Status: veröffentlicht').first().json.post_id }})\n"
+    "=✅ <b>Veröffentlicht</b> auf {{ $('Status prüfen').first().json.profil_name }} ({{ $('Status: veröffentlicht').first().json.post_id }})\n"
     "Instagram: {{ $('Status: veröffentlicht').first().json.permalink }}\n"
-    "Facebook-ID: {{ $('Status: veröffentlicht').first().json.fb_post_id }}\n"
+    "{{ $('Status: veröffentlicht').first().json.fb_post_id ? 'Facebook-ID: ' + $('Status: veröffentlicht').first().json.fb_post_id + '\\n' : '' }}"
     "Kommentar-Keyword aktiv: <b>{{ $('Status prüfen').first().json.keyword }}</b>"), 4180, 200)
 wf.link("Medien-URL bereit", "Instagram: Container anlegen")
 wf.chain("Instagram: Container anlegen", "Reel? (Verarbeitung abwarten)")
@@ -956,8 +1033,11 @@ wf.link("Reel? (Verarbeitung abwarten)", "Instagram: veröffentlichen", out=1)
 wf.chain("Reel: 30 s warten", "Instagram: Container-Status", "Container-Status auswerten", "Reel verarbeitet?")
 wf.link("Reel verarbeitet?", "Instagram: veröffentlichen", out=0)
 wf.link("Reel verarbeitet?", "Reel: 30 s warten", out=1)
-wf.chain("Instagram: veröffentlichen", "Instagram: Permalink holen", "Facebook: posten", "Status: veröffentlicht",
-         "Sheet: Post veröffentlicht", "Telegram: veröffentlicht")
+add(wf, "if", "Facebook-Seite?", if_node(cond("={{ $('Status prüfen').first().json.fb_page_id }}", "", op="notEmpty")), 3410, 340)
+wf.chain("Instagram: veröffentlichen", "Instagram: Permalink holen", "Facebook-Seite?")
+wf.link("Facebook-Seite?", "Facebook: posten", out=0)
+wf.link("Facebook-Seite?", "Status: veröffentlicht", out=1)
+wf.chain("Facebook: posten", "Status: veröffentlicht", "Sheet: Post veröffentlicht", "Telegram: veröffentlicht")
 if EXT:
     add(wf, "if", "Video für TikTok/YouTube?", if_node(cond(
         "={{ $('Status prüfen').first().json.ist_video && ($('Konfiguration').first().json.tiktok_aktiv || $('Konfiguration').first().json.youtube_aktiv) }}",
@@ -1017,7 +1097,7 @@ posts.forEach((p, n) => {
   (ins[n]?.json?.data || []).forEach(d => { m[d.name] = d.values?.[0]?.value ?? d.total_value?.value ?? ''; });
   const seit = p.json.letzter_check ? new Date(p.json.letzter_check).getTime() : 0;
   (kom[n]?.json?.data || []).filter(k => new Date(k.timestamp).getTime() > seit).forEach(k => {
-    neu.push({ comment_id: k.id, post_id: p.json.post_id, username: k.username, text: k.text,
+    neu.push({ comment_id: k.id, post_id: p.json.post_id, profil: p.json.profil || 'haupt', username: k.username, text: k.text,
       ist_keyword: kws.some(w => (k.text || '').toUpperCase().includes(w)) });
   });
   zeilen.push({ post_id: p.json.post_id, reichweite: m.reach ?? '', views: m.views ?? '', likes: m.likes ?? '',
@@ -1034,7 +1114,7 @@ add(wf, "code", "Nur Kennzahl-Zeilen", code("return $input.all().filter(i => !i.
 add(wf, "sheets", "Sheet: Kennzahlen aktualisieren", sheet_write("update", "Posts", "post_id"), 1760, 160)
 add(wf, "code", "Neue Kommentare?", code("""
 const m = $input.all().find(i => i.json.__meta).json;
-// Keyword-Kommentare beantwortet ManyChat – nur die übrigen an Claude
+// Keyword-Kommentare beantwortet Komently – nur die übrigen an Claude
 const rest = m.neue_kommentare.filter(k => !k.ist_keyword);
 if (!rest.length && !m.top_posts.length) return [];
 const c = $('Konfiguration').first().json;
@@ -1056,10 +1136,10 @@ const e = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').repl
 const icon = { frage: '❓', lead_interesse: '🔥', lob: '👍', kritik: '⚠️', spam: '🗑', sonstiges: '💬', keyword_manychat: '🔑' };
 let t = '👀 <b>Social-Monitoring</b>\\n';
 const kw = meta.neue_kommentare.length - rest.length;
-if (kw) t += `\\n🔑 ${kw} Keyword-Kommentar(e) → ManyChat übernimmt.`;
+if (kw) t += `\\n🔑 ${kw} Keyword-Kommentar(e) → Komently übernimmt.`;
 bewertet.filter(b => b.kategorie !== 'spam').forEach(b => {
   const k = rest.find(r => r.comment_id === b.comment_id) || {};
-  t += `\\n\\n${icon[b.kategorie] || '💬'} ${b.dringend ? '<b>DRINGEND</b> ' : ''}@${e(k.username)} (${e(k.post_id)}):\\n„${e(k.text)}“\\n↳ Vorschlag: ${e(b.antwortvorschlag)}`;
+  t += `\\n\\n${icon[b.kategorie] || '💬'} ${b.dringend ? '<b>DRINGEND</b> ' : ''}@${e(k.username)} (${e(k.profil)} · ${e(k.post_id)}):\\n„${e(k.text)}“\\n↳ Vorschlag: ${e(b.antwortvorschlag)}`;
 });
 if (meta.top_posts.length) t += `\\n\\n🚀 Überdurchschnittlich: ${meta.top_posts.join(', ')} – als Anzeige boosten?`;
 return [{ json: { text: t.slice(0, 4000) } }];
@@ -1113,6 +1193,7 @@ return [{ json: {
   ig_username: f('ig_username', 'instagram_username', 'username', 'handle').replace(/^@/, ''),
   kanal: (f('kanal', 'platform', 'channel') || 'instagram').toLowerCase(),
   keyword,
+  profil: String(w.query?.profil || f('profil') || 'haupt'),
   einwilligung: ['true', 'ja', 'yes', '1'].includes(einw),
   rohdaten: JSON.stringify(w.body || {}).slice(0, 2000),
 }}];
@@ -1124,7 +1205,8 @@ const c = $('Konfiguration').first().json;
 const l = $('Lead normalisieren').first().json;
 const posts = $input.all().map(i => i.json).filter(p => p.gamma_url && p.status === 'veroeffentlicht')
   .sort((a, b) => String(b.veroeffentlicht_am).localeCompare(String(a.veroeffentlicht_am)));
-const p = posts[0];
+// bevorzugt der neueste Guide desselben Profils, sonst der neueste überhaupt
+const p = posts.find(p => (p.profil || 'haupt') === l.profil) || posts[0];
 const url = p?.gamma_url || c.keyword_fallback_url[l.keyword] || c.termin_link;
 const titel = p?.leadmagnet_titel || c.keywords[l.keyword] || 'Infos zur Baufinanzierung';
 const anrede = l.vorname ? (c.ansprache === 'du' ? `Hey ${l.vorname}` : `Hallo ${l.vorname}`) : (c.ansprache === 'du' ? 'Hey' : 'Hallo');
@@ -1143,12 +1225,12 @@ return [{ json: {
   datum: new Date().toISOString(), quelle: l.quelle, subscriber_id: l.subscriber_id, vorname: l.vorname, nachname: l.nachname,
   email: l.email, telefon: l.telefon, ig_username: l.ig_username, kanal: l.kanal, keyword: l.keyword,
   post_id: l.post_id, leadmagnet_url: l.leadmagnet_url, einwilligung: l.einwilligung ? 'ja' : 'nein', status: 'neu',
-  rohdaten: l.rohdaten,
+  rohdaten: l.rohdaten, profil: l.profil,
 }}];
 """), 1320, 300)
 add(wf, "sheets", "Sheet: Lead speichern", sheet_write("append", "Leads"), 1540, 300)
 add(wf, "tg", "Telegram: neuer Lead", tg_text(
-    "=🎯 <b>Neuer Lead</b> via {{ $('Lead-Zeile bauen').first().json.quelle }} / {{ $('Lead-Zeile bauen').first().json.kanal }}\n"
+    "=🎯 <b>Neuer Lead</b> via {{ $('Lead-Zeile bauen').first().json.quelle }} / {{ $('Lead-Zeile bauen').first().json.kanal }} ({{ $('Lead-Zeile bauen').first().json.profil }})\n"
     "{{ $('Lead-Zeile bauen').first().json.vorname }} {{ $('Lead-Zeile bauen').first().json.nachname }} "
     "(@{{ $('Lead-Zeile bauen').first().json.ig_username }})\n"
     "E-Mail: {{ $('Lead-Zeile bauen').first().json.email || '–' }} · Tel: {{ $('Lead-Zeile bauen').first().json.telefon || '–' }}\n"
@@ -1175,16 +1257,18 @@ add(wf, "webhook", "Guide-Link aufgerufen", {
 add(wf, "code", "Konfiguration", code(KONFIG), 220, 300)
 add(wf, "code", "Keyword prüfen", code("""
 const c = $('Konfiguration').first().json;
-const kw = String($('Guide-Link aufgerufen').first().json.params?.keyword || '').toUpperCase();
-return [{ json: { keyword: c.keywords[kw] ? kw : '' } }];
+const w = $('Guide-Link aufgerufen').first().json;
+const kw = String(w.params?.keyword || '').toUpperCase();
+return [{ json: { keyword: c.keywords[kw] ? kw : '', profil: String(w.query?.profil || 'haupt') } }];
 """), 440, 300)
 add(wf, "sheets", "Sheet: Posts zum Keyword", sheet_read("Posts", "keyword", "={{ $json.keyword || '-' }}"), 660, 300,
     alwaysOutputData=True)
 add(wf, "code", "Ziel bestimmen", code("""
 const c = $('Konfiguration').first().json;
-const kw = $('Keyword prüfen').first().json.keyword;
-const p = $input.all().map(i => i.json).filter(p => p.gamma_url && p.status === 'veroeffentlicht')
-  .sort((a, b) => String(b.veroeffentlicht_am).localeCompare(String(a.veroeffentlicht_am)))[0];
+const { keyword: kw, profil } = $('Keyword prüfen').first().json;
+const posts = $input.all().map(i => i.json).filter(p => p.gamma_url && p.status === 'veroeffentlicht')
+  .sort((a, b) => String(b.veroeffentlicht_am).localeCompare(String(a.veroeffentlicht_am)));
+const p = posts.find(p => (p.profil || 'haupt') === profil) || posts[0];
 return [{ json: { ziel: p?.gamma_url || c.keyword_fallback_url[kw] || c.website } }];
 """), 880, 300)
 add(wf, "respond", "Weiterleiten", {
