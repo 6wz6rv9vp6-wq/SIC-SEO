@@ -66,7 +66,8 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
    | Header Auth | Apify API | Name `Authorization`, Wert `Bearer <TOKEN>` |
    | Header Auth | fal.ai API | Name `Authorization`, Wert `Key <FAL_KEY>` |
    | Header Auth | Gamma API | Name `X-API-KEY`, Wert = Gamma-Key |
-   | Query Auth | Meta Page Token | Name `access_token`, Wert = langlebiger **Page Access Token** |
+   | Query Auth | Meta System-User-Token | Name `access_token`, Wert = System-User-Token (für **alle** Instagram-/Meta-Nodes) |
+   | Query Auth | Meta Facebook-Seite | Name `access_token`, Wert = Seiten-Token der Facebook-Seite (**nur** im Node „Facebook: posten“ in Workflow 03) |
    | Telegram API | Telegram Bot | Bot-Token |
    | Google Sheets OAuth2 | Google Sheets | Google-Login |
 
@@ -80,7 +81,7 @@ Recherche → Post mit Bild/Video → Freigabe per Telegram → Posting auf Inst
 - Instagram muss ein **Business- oder Creator-Konto** sein und mit der Facebook-Seite verknüpft.
 - In [developers.facebook.com](https://developers.facebook.com) eine App (Typ *Business*) anlegen, Produkt „Instagram Graph API“ / „Facebook Login for Business“.
 - Berechtigungen: `instagram_basic`, `instagram_content_publish`, `instagram_manage_comments`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`. Für die Ad Library zusätzlich die Identitätsbestätigung unter facebook.com/ID.
-- Langlebigen **Page Access Token** erzeugen (Graph API Explorer → User-Token → gegen Long-Lived tauschen → `/me/accounts` liefert den Page-Token, der nicht abläuft).
+- **Zwei Tokens**, beide ohne Ablaufdatum (Schritt-für-Schritt in `installation/META_EINRICHTUNG.md`): ein **System-User-Token** für alle Instagram-Aufrufe (beide Profile) und ein **Seiten-Token** für das Posten auf der Facebook-Seite.
 - `ig_user_id` ermitteln: `GET /{page-id}?fields=instagram_business_account`.
 - Limit: 50 API-Posts pro 24 h auf Instagram. Bilder müssen JPEG und öffentlich erreichbar sein (fal.ai liefert öffentliche URLs).
 - `graph_version` in der Konfiguration bei Bedarf auf die aktuelle Version setzen.
@@ -123,7 +124,7 @@ Das System bespielt mehrere Profile mit **eigenen Inhalten**. Recherche, Freigab
 **Meta-Verbindung des Zweitprofils:**
 1. Das Zweitprofil muss ein **Business- oder Creator-Konto** sein.
 2. Die Instagram-API (über Facebook-Login) braucht auch für ein reines Instagram-Profil eine **verknüpfte Facebook-Seite**, gepostet wird dort aber nichts (`fb_page_id: ''`). Eine Facebook-Seite kann nur mit einem Instagram-Konto verknüpft sein. Gibt es keine freie Seite, eine schlichte neue Seite anlegen (z. B. „Smart Immo Concept – Zweitprofil“) und das Zweitprofil damit verbinden (Meta Business Suite → Einstellungen → Instagram-Konten).
-3. **Ein Zugangsschlüssel für beide Profile:** Statt eines Page-Tokens am besten einen **System-User-Token** nehmen: Meta Business Suite → Unternehmenseinstellungen → Nutzer → Systemnutzer → hinzufügen, beiden Seiten und beiden Instagram-Konten zuweisen, Token mit den Berechtigungen aus Abschnitt 3 erzeugen (Ablauf: „Nie“). Diesen Token im Credential „Meta Page Token“ eintragen – er gilt dann für beide Profile.
+3. **Ein Zugangsschlüssel für beide Profile:** Statt eines Page-Tokens am besten einen **System-User-Token** nehmen: Meta Business Suite → Unternehmenseinstellungen → Nutzer → Systemnutzer → hinzufügen, beiden Seiten und beiden Instagram-Konten zuweisen, Token mit den Berechtigungen aus Abschnitt 3 erzeugen (Ablauf: „Nie“). Diesen Token im Credential „Meta System-User-Token“ eintragen – er gilt für beide Instagram-Profile. Fürs Posten auf Facebook braucht der Node „Facebook: posten“ zusätzlich den Seiten-Token (Credential „Meta Facebook-Seite“), siehe `installation/META_EINRICHTUNG.md`.
 4. `ig_user_id` des Zweitprofils: `GET /{seiten-id}?fields=instagram_business_account` (Graph API Explorer).
 
 **Komently fürs Zweitprofil:** Das Zweitprofil in Komently zusätzlich verbinden und die Keyword-Automationen dort ebenfalls anlegen, mit diesen Links (`profil=zweitprofil` anhängen):
@@ -180,7 +181,7 @@ Den Inhalt eines Entwurfs änderst du direkt im Sheet (`Posts` → `caption_inst
 
 - Kam der Wochenreport (Mo) und die Entwürfe beider Profile?
 - Guthaben bei Anthropic, Perplexity, fal.ai, Gamma und Apify (bei Anthropic und fal.ai lässt sich Auto-Aufladen bzw. eine Warnung einstellen).
-- Meta-Token: Er läuft nicht ab, wird aber ungültig, wenn du dein Facebook-Passwort änderst oder die App-Berechtigung entziehst. Dann neuen Page-Token erzeugen und im Credential „Meta Page Token“ ersetzen.
+- Meta-Token: Er läuft nicht ab, wird aber ungültig, wenn du dein Facebook-Passwort änderst oder die App-Berechtigung entziehst. Dann die Tokens neu erzeugen (`installation/META_EINRICHTUNG.md`, Schritte 5 und 7) und in den beiden Meta-Credentials ersetzen.
 - Auf dem Server: `cd /opt/n8n && docker compose ps` (alle Container „running“), Backups in `/opt/n8n/backups`.
 
 **Freigabe nicht zu lange liegen lassen:** Die Bild-/Video-Links von fal.ai sind nicht unbegrenzt gültig. Am besten innerhalb weniger Tage freigeben, ältere Entwürfe mit 🔁 neu erzeugen.
